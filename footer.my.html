@@ -1,0 +1,52 @@
+{strip}
+<div class="col-md-3 col-sm-3">
+	<div class="xs-align-center footer_menu">
+
+		<div class="h3">
+			[`Личный кабинет`]
+		</div>
+		{if $wa->isAuthEnabled()}
+			<ul>
+				{if $wa->user()->isAdmin()}	
+					<li>
+						<a href="{$wa_backend_url}" target="_blank"><i class="fa fa-cog"></i> [`Backend`]</a>
+					</li>
+				{/if}
+				{if $wa->user()->isAuth()}
+					<li><a href="{$wa->getUrl('/frontend/myProfile')}"><i class="fa fa-user"></i> [`Account`]</a></li>
+				{else}
+					<li><a href="{$wa->loginUrl()}"><i class="fa fa-sign-in"></i> [s`Log in`]</a></li>
+					<li><a href="{$wa->signupUrl()}"><i class="fa fa-user-plus"></i> [s`Sign up`]</a></li>
+				{/if}
+			
+		{if $wa->shop && $wa->user()->isAuth()}
+				<li><a href="{$wa->getUrl('shop/frontend/myOrders')}"><i class="fa fa-cart-arrow-down"></i> [`My orders`]</a></li>
+		
+			{if shopAffiliate::isEnabled()}
+				<li><a href="{$wa->getUrl('shop/frontend/myAffiliate')}"><i class="fa fa-percent"></i> [`Affiliate program`]</a></li>
+			{/if}
+		{/if}
+			
+				<li class="divider"></li>
+				
+				{if $wa->mailer && $wa->user()->isAuth()}
+					<li><a href="{$wa->getUrl('mailer/frontend/mySubscriptions')}"><i class="fa fa-envelope-o"></i> [`My subscriptions`]</a></li>
+				{/if}
+				
+				
+				{if $wa->user()->isAuth()}
+					<li><a href="?logout"><i class="fa fa-sign-out"></i> [s`Log out`]</a></li>
+				{/if}
+			</ul>
+		{else}
+			{if $wa->user()->isAdmin()}
+				{if $wa->locale() == 'ru_RU'}
+				    Необходимо <b><a href="{$wa_backend_url}site/#/personal/settings/" target="_blank">включить авторизацию</a></b>!
+				{else}
+				    Need to <b><a href="{$wa_backend_url}site/#/personal/settings/" target="_blank">enable authorization</a></b>!
+				{/if}
+			{/if}	
+		{/if}
+	</div>
+</div>
+{/strip}

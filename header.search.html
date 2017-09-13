@@ -1,0 +1,62 @@
+{strip}
+	<div style="height: 1px; margin: {if $wa_app == 'shop' && !empty($theme_settings.header_search_ex)}5{else}22{/if}px 0 0;" class="hidden-xs"></div>
+	{if $wa_app == 'shop' && !empty($theme_settings.header_search_ex)}
+		{if !empty($theme_settings.search_ex_list_limit)}
+			{$search_ex_limit = $theme_settings.search_ex_list_limit}
+		{else}
+			{$search_ex_limit = '3'}
+		{/if}
+
+		{if !empty($theme_settings.search_ex_list_truncat)}
+			{$phrase_truncat = $theme_settings.search_ex_list_truncat}
+		{else}
+			{$phrase_truncat = ''}
+		{/if}
+
+		{if !empty($theme_settings.search_ex_link_mode)}
+			{*Search product mode*}
+			{$s_p_m = 'true'}
+		{else}
+			{$s_p_m = ''}
+		{/if}
+
+		{if !empty($theme_settings.search_ex_list_id)}
+			{$examples = $wa->shop->productSet( $theme_settings.search_ex_list_id )}
+			{if !empty($theme_settings.header_search_ex_random)}
+				{$_tmp = shuffle($examples)}
+			{/if}
+		{/if}
+
+		<small style="display: inline-block; padding: 0 0 5px 6px;" class="header-search-ex">
+			{if !empty($theme_settings.header_search_ex_title)}
+				{$theme_settings.header_search_ex_title}&nbsp;
+			{/if}
+			{if !empty($theme_settings.search_ex_list_id)}
+				{foreach $examples as $p}
+					{if $p@iteration <= $search_ex_limit}
+
+						{if !empty($phrase_truncat)}
+							{$search_product_name = strip_tags($p.name)|truncate:$phrase_truncat:''}
+						{else}
+							{$search_product_name = strip_tags($p.name)}
+						{/if}
+
+						<a href="{if empty($s_p_m)}{$wa->getUrl('shop/frontend/search')}?query={$search_product_name|replace:' ':'%20'}{else}{$p.frontend_url}{/if}" style="text-decoration:none;">
+							{$search_product_name}
+						</a>
+
+					{/if}
+				{/foreach}
+			{/if}
+		</small>
+	{/if}
+	{if $wa->shop}
+		<form method="get" action="{$wa->getUrl('shop/frontend/search')}" class="pro-live-search relative">
+		    <input type="search" name="query" {if !empty($query)}value="{$query}"{/if} class="{if !empty($theme_settings.live_search_enable)}pro-live-query {/if}search" placeholder="[s`Find products`]" autocomplete="off" style="width: 80%;" data-list="ajax">&nbsp;
+		    <button type="submit" class="button"><i class="fa fa-search"></i></button>
+			{if !empty($theme_settings.live_search_enable)}
+				<div class="pro-live-result in-header shadowed-mini xs-align-left" style="display:none;"></div>
+			{/if}
+		</form>
+	{/if}
+{/strip}

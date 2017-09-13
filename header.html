@@ -1,0 +1,60 @@
+{strip}
+{if !empty($theme_settings.show_header)}
+	{if empty($theme_settings.theme_id)}
+	    {$theme_id = 'prostore'}
+	{else}
+	    {$theme_id = waRequest::getTheme()}
+	{/if}
+
+	<div class="header_inner" style="padding: 15px 0;">
+
+		<div class="sidebar_offset">
+			<div class="col-xs-4" style="padding: 15px 7px;">
+				{include file="index.logo.html" inline}
+			</div>
+			<div class="col-xs-8">
+				<h1>Энергосклад</h1>
+				<p>Кабель. Провод. Низковольтная аппаратура. Светильники. Лампы</p>
+			</div>
+		</div>{*/sidebar_offset*}
+
+
+
+		<div class="header_offset">
+
+			{*Поиск*}
+			<div class="col-md-9 col-sm-8 xs-align-center header_search" style="padding: 0 7px 15px;">
+				{include file="header.search.html" inline}
+				{if $wa->block("`$theme_id`.header_search")}
+					<div class="clearfix"></div>
+					<div style="padding-top:5px;">
+						{$wa->block("`$theme_id`.header_search")}
+					</div>
+				{/if}
+			</div>
+			{*/ Поиск*}
+
+
+
+			<div class="col-md-3 col-sm-4" >
+
+				{*include file="header.info.html" inline*}
+
+				{include file="header.cart.html" inline}
+
+
+			</div>{*/col-7*}
+
+
+
+
+
+		</div>{*/content_holder*}
+
+
+		<div class="clearfix"></div>
+
+	</div>{*/ header_inner*}
+
+{/if}
+{/strip}

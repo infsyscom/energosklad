@@ -1,0 +1,60 @@
+{*
+### ### ### ### ###
+
+КОД ДЛЯ ВСТАВКИ В БЛОК "МЕНЮ 1":
+CODE FOR PASTE INTO "MENU 1" BLOCK:
+
+
+<div class="h3">
+	Информация
+</div>
+<ul>
+	<li><a href="#ссылка">Доставка</a></li>
+	<li><a href="#ссылка">Оплата</a></li>
+	<li><a href="#ссылка">Гарантия</a></li>
+	<li class="divider"></li>
+	<li><a href="#ссылка">Блог</a></li>
+	<li><a href="#ссылка">Фотогалерея</a></li>
+</ul>
+
+
+КОНЕЦ КОДА ДЛЯ ВСТАВКИ.
+END OF CODE.
+
+### ### ### ### ###
+
+
+
+
+КОД НИЖЕ НЕ МЕНЯТЬ И НЕ КОПИРОВАТЬ!!!
+
+
+
+*}
+{strip}
+<div class="col-md-3 col-sm-3">
+
+	{if empty($theme_settings.theme_id)}
+		{$theme_id = 'prostore'}
+	{else}
+		{$theme_id = waRequest::getTheme()}
+	{/if}
+
+	<div class="xs-align-center footer_menu">
+		{if $wa->block("`$theme_id`.footer_menu1")}
+			{$wa->block("`$theme_id`.footer_menu1")}
+		{else}
+			{$theme_settings.menu_1}
+		{/if}
+		{$pages=$wa->shop->pages()}
+		{if $pages}
+		<ul>
+			<li><a href="/">Главная</a></li>
+		{foreach from=$pages item=page}
+			<li><a href="/{$page.url}">{$page.name}</a></li>
+		{/foreach}
+		</ul>
+		{/if}
+	</div>
+</div>
+{/strip}

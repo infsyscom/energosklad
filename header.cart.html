@@ -1,0 +1,67 @@
+{strip}
+{if $wa->shop}
+{*Корзина*}
+<div class="col-md-12 hidden-xs hidden-sm">
+
+
+	{$cart_total = $wa->shop->cart->total()}
+	<div class="pro_cart cart{if !empty($theme_settings.show_total_in_cart)} show_total{/if} active" style="display: none;">
+		 {*Отступ сверху*}
+		 <div style="height: 1px; margin: {if $wa_app == 'shop' && !empty($theme_settings.header_search_ex)}14{else}12{/if}px 0 0;" class="hidden-xs"></div>
+
+		 <a href="{$wa->getUrl('shop/frontend/cart')}" class="cart-summary{if $wa_app == 'shop' && !empty($theme_settings.enable_ajax_cart)} button-ajax-cart{if !empty($theme_settings.remove_related_in_ajax_cart)} remove-related{/if}{/if}">
+
+	    	<div class="top-cart-icon-holder" style="float: left;">
+		     	{if $cart_total}
+		     		<i class="extra-icon-cart4" style="float:left;"></i>
+		     	{else}
+		     		<i class="extra-icon-cart4-o" style="float:left;"></i>
+		     	{/if}
+	     	</div>
+
+
+	     	<div style="float: left;">
+		     	<div>
+			     	<span class="cart_title">[`Cart`]</span>
+					{*
+						<span class="cart_count">{if $cart_total}{$wa->shop->cart()->count()}{/if}</span>
+					*}
+			     	<span class="cart_count">{$wa->shop->cart()->count()}</span>
+			    </div>
+				<div class="clearfix"></div>
+
+		     	<div>
+					{*
+						{if $cart_total}
+					        <span class="total_title">[`Total`]:</span>
+					    {/if}
+				        <span class="pro_cart_total cart-total{if !($wa_app == 'shop' && $action == 'cart')}-top{/if}" style="float: left;">
+			            	{if $cart_total}
+				            	{wa_currency_html($cart_total, $wa->shop->currency())}
+				            {else}
+				            	<span style="font-weight: normal;">[`Cart is empty...`]</span>
+				            {/if}
+						</span>
+					*}
+
+
+				    <span class="total_title">[`Total`]:</span>
+
+			        <span class="pro_cart_total cart-total{if !($wa_app == 'shop' && $action == 'cart')}-top{/if}">
+			           	{wa_currency_html($cart_total, $wa->shop->currency())}
+					</span>
+				</div>
+			</div>
+
+			<div class="clearfix"></div>
+	     </a>
+
+
+	</div> {* / cart *}
+
+
+
+</div>{*/col-4*}
+{*/Корзина*}
+{/if}
+{/strip}

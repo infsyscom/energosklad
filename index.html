@@ -1,0 +1,464 @@
+{strip}
+
+{if empty($theme_settings.theme_id)}
+    {$theme_id = 'prostore'}
+{else}
+    {$theme_id = waRequest::getTheme()}
+{/if}
+
+
+
+{if !waRequest::isXMLHttpRequest()}{* Не отдаём по ajax *}
+<!DOCTYPE html>
+
+{$html_class_array = []}
+{$_color_scheme_class = str_replace('theme_settings/','',str_replace('.jpg','',$theme_settings.color_scheme))}
+
+{if $theme_settings.gallery_script}{$html_class_array[] = $theme_settings.gallery_script}{/if}
+{if $theme_settings.color_scheme}{$html_class_array[] = $_color_scheme_class}{/if}
+{*{if $theme_settings.font_size}{$html_class_array[] = $theme_settings.font_size}{/if}*}
+{*{if $theme_settings.font_family}{$html_class_array[] = $theme_settings.font_family}{/if}*}
+{if $wa->globals('isMyAccount')}{$html_class_array[] = 'my'}{/if}
+
+{if $wa->locale() == 'ru_RU'}
+    {$lang = 'lang="ru"'}
+    {$meta_lang = 'ru'}
+{else}
+    {$lang = 'lang="en"'}
+    {$meta_lang = 'en'}
+{/if}
+
+<html {$lang}{if !empty($html_class_array)} class="{join(' ', $html_class_array)}"{/if}>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+
+    <title>{$wa->title()|escape}</title>
+    <meta name="Keywords" content="{$wa->meta('keywords')|escape}" />
+    <meta name="Description" content="{$wa->meta('description')|escape}" />
+    <!--<meta name="Author" content="weberia.ru" />-->
+    <!--<meta name="version" content="{$wa_theme_version}">-->
+
+    <meta property="og:url" content="{$wa->domainUrl()}{$wa->currentUrl()}">
+    <meta property="og:title" content="{$wa->title()|escape}">
+    {if $wa->meta('description')|escape}
+    	<meta property="og:description" content="{$wa->meta('description')|escape}" />
+    {else}
+    	{if !empty($theme_settings.slogan)}
+    		<meta property="og:description" content="{$theme_settings.slogan|escape}" />
+    	{/if}
+    {/if}
+
+    {if $wa->block("`$theme_id`.social_logo")}
+    	<meta property="og:image" content="{$wa->block("`$theme_id`.social_logo")}?v{$wa_theme_version}" />
+    {else}
+    	{if !empty($theme_settings.logo_social)}
+    		<meta property="og:image" content="{$wa->domainUrl()}{$wa_theme_url}{$theme_settings.logo_social}?v{$wa_theme_version}" />
+    	{/if}
+    {/if}
+
+
+
+
+    {if !empty($theme_settings.noindex) && !empty($page.hide) || !empty($page.hide_robots)}
+        {* Скрываем от роботов страницы, с параметром hide=1 (скрытые из меню) или с hide_robots=1 *}
+        <meta name="robots" content="noindex,nofollow" />
+    {/if}
+
+
+
+    {if !empty($canonical)}<link rel="canonical" href="{$canonical}"/>{/if}
+    <link rel="shortcut icon" href="/favicon.ico"/>
+    {if $wa->blog}
+        <!-- rss -->
+        {$rss=$wa->blog->rssUrl()}
+        {if $rss}<link rel="alternate" type="application/rss+xml" title="{$wa->accountName()}" href="{$rss}">{/if}
+    {/if}
+
+
+
+    <!--[if lt IE 9]>
+    <script>
+    document.createElement('header');
+    document.createElement('nav');
+    document.createElement('section');
+    document.createElement('article');
+    document.createElement('aside');
+    document.createElement('footer');
+    document.createElement('figure');
+    document.createElement('hgroup');
+    document.createElement('menu');
+    document.createElement('time');
+    </script>
+    <![endif]-->
+
+
+   	<script type="text/javascript" src="{$wa_theme_url}script.jquery.1.11.min.js"></script>
+
+
+    {* ПОДКЛЮЧАЕМ ОПЦИИ *}
+    {include file='head.options.html'}
+
+    <!--$wa->head()-->
+    {$wa->head()}
+
+    <!--$wa->js()-->
+    {$wa->js()}
+
+    <!--head.html-->
+    {include file="`$wa_active_theme_path`/head.html" inline}
+
+
+    {*Определение цветовой схемы*}
+    {if !empty($theme_settings.demo)}
+        {if isset($smarty.cookies.demo_scheme)}
+            {$color_scheme = $smarty.cookies.demo_scheme}
+        {else}
+            {$color_scheme = $theme_settings.color_scheme}
+        {/if}
+    {else}
+        {$color_scheme = $theme_settings.color_scheme}
+    {/if}
+
+
+	{if empty($theme_settings.css_position)}
+		{*Главный CSS*}
+		<link href="{$wa_theme_url}style.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css"/>
+
+        {*Цветовая схема*}
+		{if $color_scheme == 'theme_settings/purplered.jpg'}
+			<link href="{$wa_theme_url}scheme.purplered.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{elseif $color_scheme == 'theme_settings/blackSwan.jpg'}
+			<link href="{$wa_theme_url}scheme.blackSwan.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{elseif $color_scheme == 'theme_settings/paper.jpg'}
+			<link href="{$wa_theme_url}scheme.paper.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{elseif $color_scheme == 'theme_settings/light.jpg'}
+			<link href="{$wa_theme_url}scheme.light.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{/if}
+
+		{if empty($theme_settings.theme_settings.logo)}
+			{include file="index.logo.fonts.html" inline}
+		{/if}
+
+		<!--$wa->css()-->
+		{$wa->css()}
+	
+	{/if}
+	<link href="{$wa_theme_url}custom.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css"/>
+</head>
+
+<body class="{if !empty($theme_settings.nav_highlight)}nav_highlight {/if}nav_animate nav_delay" data-delay="600">
+
+    <div class="main_wrapper row">
+
+    	{include file='header.decor.html' inline}{* праздничные декорации *}
+
+
+
+    	{*Проверка шапки*}
+    	{$show_header = false}
+    	{if $wa->shop && !empty($theme_settings.show_header_shop_nav)}
+    		{$show_header = true}
+    	{/if}
+    	{if !empty($theme_settings.show_header)}
+    		{$show_header = true}
+    	{/if}
+    	{if !empty($theme_settings.show_header_top_panel)}
+    		{$show_header = true}
+    	{/if}
+
+        {include file="index.top_banner.html" inline}
+
+    	{if $show_header == true}
+	    	<div class="header" style="position: relative; z-index: 220;">
+
+	    		{*Верхняя панель шапки*}
+	    		{include file="header.top_panel1.html" inline}
+
+	    		{*Содержимое шапки*}
+	    		{include file="header.html" inline}
+
+	    		{*Меню товаров в шапке*}
+	    		{include file="header.top_panel2.html" inline}
+
+                {*Меню через картинки категорий*}
+	    		{include file="header.top_cat_images.html" inline}
+
+	    	</div>{* / header*}
+	    {/if}{*$show_header*}
+
+
+
+
+    	{* ЛОГОТИП + важные кнопки [ РЕЖИМ БЕЗ ШАПКИ ]
+    	   На мобильных он здесь, а на настольных клонируется в сайдбар, здесь скрывается *}
+    	{if empty($theme_settings.show_header)}
+	    	<div class="header_holder align-center">
+	    	{if $wa->isMobile()}
+	    		<div class="header_content">
+	    			{include file="index.logo.html" inline}
+		    		{include file="sidebar.important.html" inline}
+		    	</div>
+	    	{/if}
+	    	</div>{* / sidebar_logo_holder*}
+	    {/if}
+
+
+
+
+
+    	{*СЛАЙДЕР НАД КОНТЕНТОМ (Только в Shop-script)*}
+    	{if $wa_app == 'shop'}
+            {if !empty($theme_settings.demo)}
+        		{if isset($smarty.cookies.home_slider_position)}
+        			{$home_slider_position = $smarty.cookies.home_slider_position}
+        		{else}
+        			{$home_slider_position = $theme_settings.home_slider_position}
+        		{/if}
+            {else}
+                {$home_slider_position = $theme_settings.home_slider_position}
+            {/if}
+
+    		{if $home_slider_position == 'full'}
+
+    			{*Сбор данных*}
+    			{$promocards = $wa->shop->promos()}
+    			{if !empty($theme_settings.top_slider_list_limit)}
+    				{$slider_p_limit = $theme_settings.top_slider_list_limit}
+    			{else}
+    				{$slider_p_limit = ''}
+    			{/if}
+    			{$slider_products = $wa->shop->productSet( $theme_settings.top_slider_list_id , $slider_p_limit )}
+
+
+    			{if !empty($theme_settings.home_page_slider_mode)}
+    				{if $wa->currentUrl(false, true) == $wa_app_url}
+    					{include file="`$wa_active_theme_path`/home.slider.html" promocards=$promocards slider_products=$slider_products inline}
+    				{/if}
+    				{if $action == 'category' && !empty($theme_settings.home_slider_on_category)}
+    					{include file="`$wa_active_theme_path`/home.slider.html" promocards=$promocards slider_products=$slider_products inline}
+    				{/if}
+    				{if $action == 'product' && !empty($theme_settings.home_slider_on_product)}
+    					{include file="`$wa_active_theme_path`/home.slider.html" promocards=$promocards slider_products=$slider_products inline}
+    				{/if}
+    				{if $action == 'page' && !empty($theme_settings.home_slider_on_page)}
+    					{include file="`$wa_active_theme_path`/home.slider.html" promocards=$promocards slider_products=$slider_products inline}
+    				{/if}
+    			{/if}
+
+
+    		{/if}{*/$home_slider_position == 'home'*}
+    	{/if}{*/$wa_app == 'shop'*}
+
+
+
+    	{* САЙДБАР *}
+        {if !empty($theme_settings.demo)}
+        	{if isset($smarty.cookies.demo_side_fixed)}
+        		{$side_fixed = $smarty.cookies.demo_side_fixed}
+        	{else}
+        		{$side_fixed = $theme_settings.sidebar_fixed}
+        	{/if}
+
+        	{if isset($smarty.cookies.demo_footer_size)}
+        		{$footer_size = $smarty.cookies.demo_footer_size}
+        	{else}
+        		{$footer_size = $theme_settings.footer_size}
+        	{/if}
+        	{if isset($smarty.cookies.demo_side_pos)}
+        		{$side_pos = $smarty.cookies.demo_side_pos}
+        	{else}
+        		{$side_pos = $theme_settings.sidebar_position}
+        	{/if}
+        {else}
+            {$side_fixed = $theme_settings.sidebar_fixed}
+            {$footer_size = $theme_settings.footer_size}
+            {$side_pos = $theme_settings.sidebar_position}
+        {/if}
+
+
+
+    	<div class="sidebar_holder sidepos_{$side_pos} sidebar_bg main{if !empty($side_fixed)} sidebar-init{/if}{if !empty($theme_settings.sidebar_shadow)} shadow{else} noshadow{/if}">
+    		<div class="sidebar">
+    			<div class="sidebar_content">
+
+    				{* ЛОГОТИП + важные кнопки *}
+    				{if empty($theme_settings.show_header)}
+	    				<div class="sidebar_logo_holder">
+	    				{if !$wa->isMobile()}
+	    					<div class="header_content">
+	    						{include file="index.logo.html" inline}
+			    				{include file="sidebar.important.html" inline}
+			    			</div>{* / header_content *}
+		    			{/if}
+		    			</div>{* / sidebar_logo_holder*}
+		    		{/if}
+
+    				{include file="sidebar.html" inline}
+    		    </div>
+    		</div>{* / sidebar*}
+    	</div>{* / sidebar_holder *}
+
+
+
+
+    	<div class="content_holder main_content_holder">
+
+
+			{* ОСНОВНОЕ СОДЕРЖАНИЕ *}
+		    <main class="maincontent">
+
+		        {*КАЖДЫЙ ФАЙЛ ОБЕРНУТЬ С <div class="container"> *}
+
+		        {*сюда меню тоже можно перенести*}
+{/if}
+{* То, что ниже отдаём по ajax *}
+	            {include file="`$wa_active_theme_path`/main.html" inline}
+{* Не отдаём по ajax *}
+{if !waRequest::isXMLHttpRequest()}
+
+		    </main>
+
+
+
+
+
+		</div>{* / content_holder*}
+
+		<div class="clearfix"></div>
+
+
+
+
+		{*Подвал под ширину контента*}
+		{if $footer_size == 'content'}
+			<div class="content_holder footer_content_holder xs-clear float-{if $side_pos == 'left'}right{else}left{/if}">
+				{include file='footer.html' inline}
+			</div>
+		{else}
+		{*Подвал во всю ширину*}
+			{include file='footer.html' inline}
+		{/if}
+
+
+
+		{* ПАНЕЛЬ МАГАЗИНА *}
+		{if $footer_size == 'full'}
+			{include file="index.panel.html" inline}
+		{else}
+			<div class="content_holder bottom_panel_holder">
+				{include file="index.panel.html" inline}
+			</div>
+		{/if}
+
+
+
+
+
+
+
+		<div class="clearfix"></div>
+
+        <div class="hidden highlight_layer" style="background:rgba(0,0,0,.5);"></div>
+	</div>{* / main_wrapper *}
+
+
+
+
+
+
+
+
+	{if !empty($theme_settings.css_position)}
+		{*Главный CSS*}
+		<link href="{$wa_theme_url}style.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css" id="bottom_main_css"/>
+
+		{*Цветовая схема*}
+		{if $color_scheme == 'theme_settings/purplered.jpg'}
+			<link href="{$wa_theme_url}scheme.purplered.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{elseif $color_scheme == 'theme_settings/blackSwan.jpg'}
+			<link href="{$wa_theme_url}scheme.blackSwan.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{elseif $color_scheme == 'theme_settings/paper.jpg'}
+			<link href="{$wa_theme_url}scheme.paper.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{elseif $color_scheme == 'theme_settings/light.jpg'}
+			<link href="{$wa_theme_url}scheme.light.min.css?v{$wa_theme_version}" rel="stylesheet" property="stylesheet" type="text/css">
+		{/if}
+
+
+		{if empty($theme_settings.theme_settings.logo)}
+			{include file="index.logo.fonts.html" inline}
+		{/if}
+
+		<!--$wa->css()-->
+		{$wa->css()}
+	{/if}
+
+
+
+	<script type="text/javascript" src="{$wa_theme_url}script.min.js?v{$wa_theme_version}"></script>
+
+	{if $wa_app == 'shop'}
+		{include file="`$wa_active_theme_path`/head.shop.html" inline}
+	{/if}
+	{if $wa_app == 'blog'}
+		{include file="`$wa_active_theme_path`/head.blog.html" inline}
+	{/if}
+	{if $wa_app == 'photos'}
+		{include file="`$wa_active_theme_path`/head.photos.html" inline}
+	{/if}
+    {if $wa_app == 'hub'}
+		{include file="`$wa_active_theme_path`/head.hub.html" inline}
+	{/if}
+
+
+	{* Roboto *}
+	<link rel="stylesheet" property="stylesheet" href='//fonts.googleapis.com/css?family=Roboto:400,400italic,500,500italic,700,700italic,300,300italic&subset=cyrillic-ext,latin,cyrillic'>
+
+	{* Иконочные шрифты *}
+	<link rel="stylesheet" property="stylesheet" href="{$wa_real_theme_url}fonts/extra/extra.min.css?v1.3">
+	<link rel="stylesheet" property="stylesheet" href="{$wa_real_theme_url}fonts/fa/css/font-awesome.min.css?v4.7.0">
+	<link rel="stylesheet" property="stylesheet" href="{$wa_real_theme_url}fonts/whhg/css/whhg.min.css?v1.3">
+
+    {*  NOTE:   emoji BETA-experimental
+                Использование:  http://jslegers.github.io/emoji-icon-font/
+                                icon заменить на emoji
+                                цветная иконка:                 emoji-name
+                                монохромный изменённый аналог:  emoji emoji-name
+                                name заменить на название иконки, например gift => emoji-gift
+    *}
+    <link rel="stylesheet" property="stylesheet" href="{$wa_real_theme_url}fonts/emoji/emoji.min.css?v1.3">
+
+
+    {*  NOTE:   emoji-color
+                Использование:  https://afeld.github.io/emoji-css/
+                                <i class="em em-[name]"></i>
+                                name заменить на название иконки, например gift => <i class="em em-[gift]"></i>
+    *}
+    <link rel="stylesheet" property="stylesheet" href="{$wa_real_theme_url}fonts/emoji-color/emoji.min.css?v1.4.4">
+
+
+	{* Material Icons by Google
+	<link rel="stylesheet" property="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+	*}
+	{if $wa->shop && $wa->shop->currency() == 'RUB'}
+		<link href="{$wa_real_theme_url}fonts/ruble/ruble.min.css" rel="stylesheet" property="stylesheet" type="text/css">
+	{/if}
+    {include file="index.fonts.html" inline}
+
+	{include file="index.scripts.html" inline}
+	{include file="index.modals.html" inline}
+
+
+
+
+
+	{if $wa->block("`$theme_id`.scripts")}
+		{$wa->block("`$theme_id`.scripts")}
+	{/if}
+
+
+</body>
+</html>
+{/if}{* / Не отдаём по ajax *}
+{/strip}

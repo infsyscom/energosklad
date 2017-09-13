@@ -1,0 +1,58 @@
+{strip}
+{if !empty($theme_settings.footer_social)}
+	<div class="col-md-3 col-sm-3 footer_social">
+
+		{if !empty($theme_settings.footer_social_title)}
+			<div class="h3 align-center">
+				{$theme_settings.footer_social_title}
+			</div>
+		{/if}
+
+		<div class="padding7 align-center icons_holder"{if empty($theme_settings.footer_social_title)} style="padding-top: 15px;"{/if}>
+
+			{if !empty($theme_settings.i_vk)}
+				<a href="{$theme_settings.i_vk}" class="ivk tooltip" title="[`We're in VK.com`]" target="_blank"><i class="fa fa-vk"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_ok)}
+				<a href="{$theme_settings.i_ok}" class="iok tooltip" title="[`We're on OK`]" target="_blank"><i class="fa fa-odnoklassniki"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_fb)}
+				<a href="{$theme_settings.i_fb}" class="ifb tooltip" title="[`We're on Facebook`]" target="_blank"><i class="fa fa-facebook-square"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_tw)}
+				<a href="{$theme_settings.i_tw}" class="itw tooltip" title="[`Follow us on Twitter`]" target="_blank"><i class="fa fa-twitter"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_in)}
+				<a href="{$theme_settings.i_in}" class="iin tooltip" title="[`Follow us on Instagram`]" target="_blank"><i class="fa fa-instagram"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_yt)}
+				<a href="{$theme_settings.i_yt}" class="iyt tooltip" title="[`We're on Youtube`]" target="_blank"><i class="fa fa-youtube"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_pi)}
+				<a href="{$theme_settings.i_pi}" class="ipi tooltip" title="[`We're in Pinterest`]" target="_blank"><i class="fa fa-pinterest"></i></a>
+			{/if}
+
+			{if !empty($theme_settings.i_gp)}
+				<a href="{$theme_settings.i_gp}" class="igp tooltip" title="[`We're in Google plus`]"><i class="fa fa-google-plus"></i></a>
+			{/if}
+
+			{if $wa->blog && !empty($theme_settings.i_rss)}
+				<a href="{$wa->getUrl('blog/frontend/rss')}" class="irss tooltip" title="[`Subscribe to RSS news`]"><i class="fa fa-rss"></i></a>
+			{/if}
+
+		</div>
+
+		<div class="padding7 align-center">
+			{*include file='social.html' inline*}{*БЛОК РАССКАЗАТЬ ДРУЗЬЯМ*}
+		</div>
+
+
+	</div>{*/footer_social*}
+{/if}{*/social*}
+{/strip}
