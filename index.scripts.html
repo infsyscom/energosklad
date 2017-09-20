@@ -1,0 +1,611 @@
+{strip}
+<script type="text/javascript">
+
+function is_touch() {
+    return (('ontouchstart' in window)
+    || (navigator.MaxTouchPoints > 0)
+	|| (navigator.msMaxTouchPoints > 0));
+}
+
+
+{*фиксация основного сайдбара*}
+{if !empty($theme_settings.demo)}
+    {if isset($smarty.cookies.demo_side_fixed)}
+    	{$side_fixed = $smarty.cookies.demo_side_fixed}
+    {else}
+    	{$side_fixed = $theme_settings.sidebar_fixed}
+    {/if}
+    {if isset($smarty.cookies.demo_footer_size)}
+    	{$footer_size = $smarty.cookies.demo_footer_size}
+    {else}
+    	{$footer_size = $theme_settings.footer_size}
+    {/if}
+{else}
+    {$side_fixed = $theme_settings.sidebar_fixed}
+	{$footer_size = $theme_settings.footer_size}
+{/if}
+
+
+
+$.getScript( "{$wa_theme_url}theme_plugins/jquery.sticky.min.js" ).done(function( script ) {
+
+
+    {* Прилипание верхнего меню *}
+    {if !empty($theme_settings.demo)}
+        {if isset($smarty.cookies.demo_top_fixed)}
+        	{$top_fixed = $smarty.cookies.demo_top_fixed}
+        {else}
+        	{$top_fixed = $theme_settings.stick_header_shop_nav}
+        {/if}
+    {else}
+        {$top_fixed = $theme_settings.stick_header_shop_nav}
+    {/if}
+
+
+
+
+    {if !empty($top_fixed)}
+
+        function stickTopNavInit() {
+            if ($(window).width() < 768 ) {
+                $(".top-navbar-2").unstick();
+                $('.header').css('height', 'auto').css('z-index', '220');
+            } else {
+                if (!is_touch()) {
+                    $(".top-navbar-2").sticky({
+                        wrapperClassName: 'top-navbar-2-holder',
+                    });
+
+                    {* z-index, чтобы перебить новогодние украшения *}
+                    {* до инициализации z-index задаётся в файле index.html:162 *}
+                    $('.top-navbar-2').on('sticky-start', function() {
+    					$('.header').css('z-index', '330');
+    				});
+    				$('.top-navbar-2').on('sticky-end', function() {
+    					$('.header').css('z-index', '220');
+    				});
+                }{*/is_touch*} else {
+                    $('.header').css('height', 'auto').css('z-index', '220');
+                }
+            }
+        };
+        stickTopNavInit();
+        $(window).resize(stickTopNavInit);
+
+    {/if}
+    {* / прилипание верхнего меню *}
+
+	{if !empty($side_fixed)}
+
+		function outOverflow() {
+
+		  $('.desktop .ps-container .sidebar-nav.hover_mode > .navbar-nav > li.pro_collapse').on('mouseover', function() {
+		    var $menuItem = $(this),
+		        $submenuWrapper = $('> .dropdown-menu', $menuItem);
+
+		    var menuItemPos = $menuItem.position();
+
+		    $submenuWrapper.css({
+		      top: menuItemPos.top,
+		      left: menuItemPos.right + Math.round($menuItem.outerWidth() - 30)
+		    });
+		    document.addEventListener('ps-scroll-y', function () {
+		    	var menuItemPos = $menuItem.position();
+
+		    	$submenuWrapper.css({
+		    	  top: menuItemPos.top,
+		    	  left: menuItemPos.right + Math.round($menuItem.outerWidth() - 30)
+		    	});
+		    });
+		  });
+
+		};
+
+		function scrollOverflowPosition() {
+
+		};
+
+		function inOverflow() {
+		  $('.desktop .sidebar-nav.hover_mode > .navbar-nav > li.pro_collapse').on('mouseover', function() {
+		  	var $menuItem = $(this),
+		  	    $submenuWrapper = $('> .dropdown-menu', $menuItem);
+		  	    $submenuWrapper.removeAttr('style');
+		  });
+		};
+
+
+		function stickSidebarInit() {
+			if ($(window).width() < 768 ) {
+				$(".sidebar-init").unstick();
+				$('.sidebar-init').addClass('sidebar_holder');
+			} else {
+				var bottomSpace = $('.footer_holder').outerHeight() + 50;
+
+                {if !empty($top_fixed)}
+                    if (!is_touch()) {
+                        var topSpace = $('.top-navbar-2-holder').outerHeight();
+                    } else {
+                        var topSpace = '0';
+                    }
+                {/if}
+
+				$(".sidebar-init").sticky({
+				{if $footer_size == 'full'}
+					bottomSpacing: bottomSpace,
+				{/if}
+                {if !empty($top_fixed)}
+                    topSpacing: topSpace,
+                {/if}
+					wrapperClassName: 'sidebar_holder',
+					zIndex: 320,
+				});
+				$('.sidebar_holder.sidebar-init').removeClass('sidebar_holder');
+
+
+				$('.sidebar-init').on('sticky-start', function() {
+                    {if !empty($top_fixed)}
+                        if (!is_touch()) {
+                            var topSpace = $('.top-navbar-2-holder').outerHeight();
+                        } else {
+                            var topSpace = '0';
+                        }
+                        var sidebar_height = $(window).outerHeight() - topSpace{if $footer_size == 'full'} - 50{/if};
+                    {else}
+    					var sidebar_height = $(window).outerHeight(){if $footer_size == 'full'} - 50{/if};
+                    {/if}
+					$('.sidebar_content').height(sidebar_height);
+
+
+
+					if($('.sidebar_content').hasClass('ps-container')) {
+						$('.sidebar_content').perfectScrollbar('update');
+						outOverflow();
+					} else {
+						$('.sidebar_content').perfectScrollbar({ suppressScrollX:true });
+						outOverflow();
+					}
+
+				});
+				$('.sidebar-init').on('sticky-end', function() {
+					if($('.sidebar_content').hasClass('ps-container')) {
+						$('.sidebar_content').scrollTop(0);
+						$('.sidebar_content').perfectScrollbar('destroy');
+						inOverflow();
+					}
+					$('.sidebar_content').height('auto');
+				});
+			}
+		};
+		stickSidebarInit();
+		$(window).resize(stickSidebarInit);
+	{/if}{*/side_fixed*}
+
+
+	{*Функция прилипания блока покупки на странице товара*}
+	{if $wa_app == 'shop' && $action == 'product' && !empty($theme_settings.p_buy_block_sticky) && empty($product.params.unstick)}
+
+
+		function checkWindow() {
+			var viewportHeight = $(window).outerHeight();
+			var productSBHeight = $('.product-sidebar').outerHeight();
+			var productHeaderHeight = $('.product-header').outerHeight();
+			var footerHeight = $('.footer_holder').outerHeight();
+			var productGalHeight = $('.product-gallery').outerHeight();
+			var productInfoHeight = $('.product-info').outerHeight();
+			var productRelatedHeight = $('.product-related').outerHeight();
+
+			var slideSpeed = $('.product-sidebar-summary').attr('data-speed');
+
+			var productInfoAllHeight = productGalHeight + productInfoHeight + productRelatedHeight;
+			var elementsHeight = productSBHeight;
+
+			if ($(window).width() < 1025 || viewportHeight < elementsHeight || productInfoAllHeight < productSBHeight ) {
+				$(".product-sidebar").unstick();
+				$('.product_sidebar_holder').removeClass('ready-to-stick footered absolute_position');
+				if ($(window).width() > 1024 && (productInfoAllHeight > productSBHeight)) {
+					$('.product_sidebar_holder').addClass('absolute_position');
+				}
+			} else {
+				var bottomSpace = $('.footer_holder').outerHeight() + 50;
+				$('.product_sidebar_holder').addClass('ready-to-stick');
+				$(".product-sidebar").sticky({
+				{if $theme_settings.header_decor !== 'holidays/thumbs/not.jpg' || !empty($top_fixed)}
+					topSpacing:40,
+				{else}
+					topSpacing:0,
+				{/if}
+					bottomSpacing: bottomSpace
+				});
+				$('.product_sidebar_holder').on('sticky-bottom-reached', function() {
+					$(this).addClass('footered');
+				 });
+				$('.product_sidebar_holder').on('sticky-bottom-unreached', function() {
+					$(this).removeClass('footered');
+				});
+                {*  Поставьте единичку в ковычки в строке ниже,
+                    чтобы включить автосворачивание описания
+                    в момент прилипания блока покупки на странице товара  *}
+                {$hide_summary_on_stick = ''}
+                {if !empty($hide_summary_on_stick)}
+    				$('.product_sidebar_holder').on('sticky-start', function() {
+                        $('.product-sidebar-summary').hide();
+    				});
+    				$('.product_sidebar_holder').on('sticky-end', function() {
+                        $('.product-sidebar-summary').show();
+    				});
+                {/if}
+			}
+		};
+		checkWindow();
+		$(window).resize(checkWindow);
+
+		{*Для реинииализации позиции прилипания после изменения размеров контента (вкладки с разной высотой, автовысота в слайдере)*}
+		$.getScript( "{$wa_theme_url}theme_plugins/ResizeSensor.min.js" ).done(function( script ) {
+			new ResizeSensor(jQuery('.main_wrapper, .product-gallery, .product-sidebar .cart'), function() {
+				setTimeout(checkWindow, 1000);
+			});
+		});
+
+	{/if}
+
+});{*/done*}
+
+
+
+
+
+{* RETINA JS *}
+$.getScript( "{$wa_theme_url}theme_plugins/retina.min.js" ).done(function( script ) {
+
+	$(document).ready(function() {
+
+		{if $wa_app == 'shop' && $wa->shop->config('enable_2x')}
+			$('.promo img').retina({ force_original_dimensions: false });
+			$('.product-list img,.product-info img,.cart img').retina({ force_original_dimensions: false });
+			$('.bestsellers img').retina();
+		{/if}
+
+
+		$('.img_plugin, .retina').retina({ force_original_dimensions: true });
+		$('.header_decor').retina();
+
+		{if !empty($theme_settings.logo_retina)}
+			$('.logo').retina({ force_original_dimensions: true });
+		{/if}
+		$('.footer_holder img, .cart_pay_logos img').not('.vcard img').retina({ force_original_dimensions: false });
+		$('.weberia img').retina({ force_original_dimensions: false });
+
+		{if $wa_app == 'photos'}
+			{if $wa->photos->config('enable_2x')}
+				$('#photo-list img,.photo img,.albums img').retina()
+			{/if}
+		{/if}
+
+
+	});
+});
+
+
+if (!is_touch()) {
+
+	$.getScript( "{$wa_theme_url}theme_plugins/tooltipster.min.js" ).done(function( script ) {
+		{* Это продублировать в script.shop.js в событиях lazyload и фильтрация *}
+		$('.tooltip-btn').tooltipster({
+			theme: 'tooltipster-shadow',
+			position: 'top-right',
+			hideOnClick: true,
+		});
+
+		$('.tooltip').tooltipster({
+			theme: 'tooltipster-shadow',
+			hideOnClick: true,
+			touchDevices: false,
+		});
+		$('.tooltip-r').tooltipster({
+			theme: 'tooltipster-shadow',
+			position: 'right',
+			hideOnClick: true,
+			touchDevices: false,
+		});
+		$('.tooltip-l').tooltipster({
+			theme: 'tooltipster-shadow',
+			position: 'left',
+			hideOnClick: true,
+			touchDevices: false,
+		});
+		$('.tooltip-b').tooltipster({
+			theme: 'tooltipster-shadow',
+			position: 'bottom',
+			hideOnClick: true,
+			touchDevices: false,
+		});
+		{*
+		$('.compare_btn, .fav_btn').tooltipster({
+			theme: 'tooltipster-shadow',
+			position: 'top',
+			touchDevices: false,
+		});
+        *}
+	});
+
+}{* / is_touch*}
+{* / ПОДСКАЗКИ *}
+
+
+{if !empty($theme_settings.social_widgets_enable)}
+	function socialWidInit() {
+	{*ВКОНТАКТЕ*}
+	{if !empty($theme_settings.widgetvk)}
+		$.ajax({
+		  	dataType: "script",
+		  	type: "GET",
+		  	url: "//vk.com/js/api/openapi.js?117",
+		  	success: function(data){
+		  		VK.Widgets.Group("vk_groups", {
+		  			mode: {$theme_settings.widgetvkmode},
+		  			width: "auto",
+		  			height: "{$theme_settings.vkheight}",
+		  			color1: '{$theme_settings.vkcolor1}',
+		  			color2: '{$theme_settings.vkcolor2}',
+		  			color3: '{$theme_settings.vkcolor3}'}, {$theme_settings.widgetvk});
+		  			setTimeout(function() {
+		  				$('.vkHolder').parents('.a_body').removeClass('wait');
+		  				$('#vk_groups').parents('.tab-pane').removeClass('wait');
+		  			}, 500);
+
+		  		}
+
+		  });
+	{/if}
+
+
+	{*FACEBOOK SCRIPT*}
+	{if !empty($theme_settings.widgetfb)}
+		$.ajax({
+		  	dataType: "script",
+		  	type: "GET",
+		  	url: "//connect.facebook.net/ru_RU/all.js#xfbml=1",
+		  	success: function(data){
+
+		  		FB.init({ status: true, cookie: true, xfbml: true });
+		  		FB.Event.subscribe('xfbml.render', function(response) {
+			  		  $('.fb-page').parents('.a_body').removeClass('wait');
+			  		  $('.fb-page').parents('.tab-pane').removeClass('wait');
+	  			});
+
+	  		}
+
+		  });
+	{/if}
+
+
+	{*TWITTER*}
+	{if !empty($theme_settings.widget_tw)}
+		window.twttr = (function(d, s, id) {
+		  var js, fjs = d.getElementsByTagName(s)[0],
+		    t = window.twttr || {};
+		  if (d.getElementById(id)) return t;
+		  js = d.createElement(s);
+		  js.id = id;
+		  js.src = "//platform.twitter.com/widgets.js";
+		  fjs.parentNode.insertBefore(js, fjs);
+
+		  t._e = [];
+		  t.ready = function(f) {
+		    t._e.push(f);
+		  };
+
+		  return t;
+		}(document, "script", "twitter-wjs"));
+	{/if}
+
+
+	{*INTSAGRAM*}
+	{if !empty($theme_settings.insta_client_id) && !empty($theme_settings.insta_accessToken)}
+		$.getScript( "{$wa_theme_url}theme_plugins/spectragram.min.js" ).done(function( script ) {
+			$.fn.spectragram.accessData = {
+			    accessToken: '{$theme_settings.insta_accessToken}',
+			    clientID: '{$theme_settings.insta_client_id}'
+			};
+			$('.insta-init').spectragram('getUserFeed',{
+			    query: '{$theme_settings.insta_user_name}',
+			    {if $theme_settings.insta_cols == '1'}
+			    	size: 'medium',
+			    {else}
+			    	size: 'small',
+			    {/if}
+			    max: {$theme_settings.insta_max},
+			    {if $theme_settings.insta_cols == '1'}
+			    	wrapEachWith: '<li class="col-md-12 col-sm-12 col-xs-12"></li>'
+			    {elseif $theme_settings.insta_cols == '2'}
+			    	wrapEachWith: '<li class="col-md-6 col-sm-6 col-xs-6"></li>'
+			    {elseif $theme_settings.insta_cols == '3'}
+			    	wrapEachWith: '<li class="col-md-4 col-sm-4 col-xs-4"></li>'
+			    {elseif $theme_settings.insta_cols == '4'}
+			    	wrapEachWith: '<li class="col-md-3 col-sm-3 col-xs-3"></li>'
+			    {/if}
+			});
+
+		});
+	{/if}
+	};{*/socialWidInit*}
+
+
+	{if empty($theme_settings.social_widget_load_immediately)}
+		$('.desktop .main_wrapper').one('mouseover', socialWidInit);
+		$('.touch .main_wrapper').one('touchstart', socialWidInit);
+	{else}
+		socialWidInit();
+	{/if}
+
+
+
+
+{/if}{*/social_widgets_enable*}
+
+
+
+function TabsWidth() {
+	$('.tabs').not('.noauto').each(function() {
+		var tabs = $(this);
+		var tabs_el = tabs.find('li');
+		var tabsQty = tabs_el.length;
+		var tabWidth = (100 / tabsQty);
+			tabs_el.each(function() {
+				$(this).css('width', tabWidth + '%');
+			});
+	});
+};
+TabsWidth();
+
+
+{*РАССКАЗАТЬ ДРУЗЬЯМ*}
+{if !empty($theme_settings.social_heading)}
+    {* Старые кнопки
+	$.getScript( "{$wa_real_theme_url}theme_plugins/social-likes.min.js" )
+	.done(function( script ) {
+		$('head').append('<link rel="stylesheet" href="{$wa_real_theme_url}theme_plugins/social-likes_flat.css" type="text/css" />');
+	    $('.social-likes').socialLikes();
+	});
+    *}
+
+
+    {* Кнопки от Яндекса *}
+    $.getScript( "{$wa_theme_url}js/es5-shims.min.js");
+    $.getScript( "{$wa_theme_url}js/share.js");
+{/if}
+{*/РАССКАЗАТЬ ДРУЗЬЯМ*}
+
+
+
+
+
+
+{if $wa_app == 'shop'}
+
+	{*ставим куки для количества страниц*}
+	{if !isset($smarty.cookies.products_per_page)}
+		{if $theme_settings.ppp == '12'}
+			$.cookie('products_per_page', '12', { expires: 30, path: '/'});
+		{elseif $theme_settings.ppp == '4'}
+		   	$.cookie('products_per_page', '4', { expires: 30, path: '/'});
+		{elseif $theme_settings.ppp == '8'}
+		   	$.cookie('products_per_page', '8', { expires: 30, path: '/'});
+		{elseif $theme_settings.ppp == '24'}
+		   	$.cookie('products_per_page', '24', { expires: 30, path: '/'});
+		{elseif $theme_settings.ppp == '36'}
+		   	$.cookie('products_per_page', '36', { expires: 30, path: '/'});
+		{elseif $theme_settings.ppp == '48'}
+		   	$.cookie('products_per_page', '48', { expires: 30, path: '/'});
+		{elseif $theme_settings.ppp == '60'}
+		   	$.cookie('products_per_page', '60', { expires: 30, path: '/'});
+		{/if}
+	{/if}
+	{if $theme_settings.pagination == 'lazyloading'}
+		{if !isset($smarty.cookies.lazyproducts) && !isset($smarty.cookies.user_perpage)}
+			$.cookie('lazyproducts', '1', { expires: 30, path: '/'});
+		{/if}
+	{/if}
+
+	var event_category = function(){
+		$('.perpage').click(function(){
+            $.cookie('products_per_page', $(this).data('perpage'), { expires: 30, path: '/'});
+            $.cookie('lazyproducts', '', { expires: 0, path: '/'});
+            $.cookie('user_perpage', '1', { expires: 30, path: '/'});
+		});
+		$('.lazyproducts').click(function(){
+			$.cookie('products_per_page', $(this).data('perpage'), { expires: 30, path: '/'});
+			$.cookie('lazyproducts', '1', { expires: 30, path: '/'});
+			$.cookie('user_perpage', '1', { expires: 30, path: '/'});
+		});
+	};
+	event_category();
+
+{/if}{*/$wa_app == 'shop'*}
+
+$(document).ready(function() {
+	var animate_speed = 0;
+	$('.cart_panel_holder').fadeIn(animate_speed, function() {
+		$('.sidebar_call_button').animate({ 'opacity': '1' }, animate_speed);
+	});
+	NProgress.done();
+
+	$('.mailer_holder style, .sidebar_mailer_holder style').remove();
+	$('.mailer_holder .wa-errormsg').parent().addClass('abs');
+	$('.sidebar_mailer_holder').show();
+
+    $('.mailer_holder label, .sidebar_mailer_holder label').wrap('<div class="wa-value clearfix align-left" style="margin:0 0 5px; width:100%; order:1;"></div>');
+
+});
+
+$(window).load(function() {
+    {* АВТОМАТИЧЕСКИ ВСПЛЫВАЮЩЕЕ ОКНО *}
+    {* map = marketing auto popup *}
+    {$map_link = $theme_settings.mar_map_page_link}
+
+    {if !empty($map_link)}
+
+        {$map_time = $theme_settings.mar_map_time}
+        {$map_cookie_name = 'prostore_auto_popup_'|cat:$theme_settings.mar_map_cookie}
+        {$map_days = $theme_settings.mar_map_days}
+        {$map_show = 'true'}
+
+        {if $wa_url == $wa->currentUrl() && !empty($theme_settings.mar_map_stop_home)}{$map_show = 'false'}{/if}
+        {if $wa_app == 'shop'}
+            {if $action == 'category' && !empty($theme_settings.mar_map_stop_category)}{$map_show = 'false'}{/if}
+            {if $action == 'product' && !empty($theme_settings.mar_map_stop_product)}{$map_show = 'false'}{/if}
+            {if $action == 'cart'}{$map_show = 'false'}{/if}
+            {if $action == 'checkout'}{$map_show = 'false'}{/if}
+        {/if}
+
+        {$map_stop_array = $theme_settings.mar_map_stop_links}
+        {$map_stop = explode(",", $map_stop_array)}
+        {foreach $map_stop as $stop}
+            {if $wa->currentUrl()|strstr:$stop}{$map_show = 'false'}{/if}
+        {/foreach}
+
+
+        {if !isset($smarty.cookies.$map_cookie_name) && $map_show == 'true'}
+            {$map_time = $map_time * 1000}
+            setTimeout(function(){
+                $('.autopopup').trigger('click');
+                {if empty($theme_settings.mar_map_dnd)}
+                    $.cookie('{$map_cookie_name}', 1, { expires: {$map_days}, path: '/'});
+                {/if}
+            }, {$map_time});
+        {/if}
+        {if !empty($theme_settings.mar_map_dnd)}
+            $(document).on('auto_popup_opened', function(){
+                $('.remodal-cancel.dnd').on('click', function() {
+                    $.cookie('{$map_cookie_name}', 1, { expires: {$map_days}, path: '/'});
+                });
+            });
+        {/if}
+
+    {/if}{*/!empty($map_link)*}
+
+    {* ВЕРХНИЙ ПРОДАЮЩИЙ БАННЕР *}
+    {* thb = top header banner *}
+    {if !empty($theme_settings.mar_th_banner_enable)}
+        {$thb_cookie_name = 'prostore_top_banner_'|cat:$theme_settings.mar_th_banner_cookie}
+        {$thb_days = $theme_settings.mar_th_banner_days}
+        $('.header_top_banner_close').click(function(){
+            $(this).parents('.header_top_banner').slideUp(500);
+
+            {if empty($theme_settings.mar_th_banner_always)}
+                $.cookie('{$thb_cookie_name}', 1, { expires: {$thb_days}, path: '/'});
+            {/if}
+
+            return false;
+        });
+    {/if}
+});
+
+</script>
+{* Ссылка для автомадального окна *}
+{if !empty($map_link)}
+    <div style="display:none;">
+        <a href="{$map_link}" class="popuplink autopopup{if !empty($theme_settings.mar_map_dnd)} do_not_disturb{/if}" data-dnd-title="[`Don't show it again!`]"></a>
+    </div>
+{/if}
+{/strip}
