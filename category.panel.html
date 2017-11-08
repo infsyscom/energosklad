@@ -1,0 +1,579 @@
+{strip}
+{if !empty($sorting)}
+    <!-- sorting -->
+    {$sort_fields = [
+        'name' => '[`Name`]',
+        'price' => '[`Price`]',
+        'total_sales' => '[`Bestsellers`]',
+        'rating' => '[`Customer rating`]',
+        'create_datetime'=>'[`Date added`]',
+        'stock' => '[`In stock`]']}
+    {if !isset($active_sort)}
+        {$active_sort = $wa->get('sort', 'create_datetime')}
+    {/if}
+{/if}{*sorting*}
+
+{* Для списка избранного *}
+{$list = $wa->get('list')}
+
+<div class="page-panel row">
+
+
+
+{if $place == 'category'}
+    {if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)}
+        {$sub_cat_ajax = 'ajax'}
+    {else}
+        {$sub_cat_ajax = ''}
+    {/if}
+    {include file="category.cats_images.html" sub_cat_ajax=$sub_cat_ajax inline}
+
+
+
+	{*СТРОЧНЫЕ ПОДКАТЕГОРИИ*}
+	{if $theme_settings.sub_cat_style == 'inline' && $category.subcategories}
+		<!-- inline subcategories -->
+		<div class="{*col-md-12 col-sm-12 col-xs-12 *}xs-align-center float-left">
+		    <ul class="sublist list-inline xs-align-center{if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)} sub-ajax{/if}">
+		    	{if !empty($theme_settings.sub_cats_title)}
+			    	<li class="uppercase" style="margin: 7px 10px 0px 0px;">
+			    		{$theme_settings.sub_cats_title}
+			    	</li>
+		    	{/if}
+
+		    	{if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)}
+		    		<li class="selected">
+		    			<a href="{$wa->currentUrl(0,1)}">[`All`]</a>
+		    		</li>
+		    	{/if}
+
+		        {foreach $category.subcategories as $sc}
+		            <li>
+		            	<a href="{$sc.url}">
+		            		{if !empty($sc.params.icon)}
+		            			<i class="nav_icon {$sc.params.icon}"></i>&nbsp;
+		            		{else}
+		            			{*https://www.webasyst.ru/store/plugin/shop/categoryimage/*}
+		            			{if $theme_settings.sub_cat_img_plugin == 'categoryimage'}
+		            				{if !empty($sc.image)}
+		            					<img src="{$wa_static_url}wa-data/public/shop/categories/{$sc.id}/{$sc.id}.18x18{$sc.image}" data-at2x="{$wa_static_url}wa-data/public/shop/categories/{$sc.id}/{$sc.id}.36x36{$sc.image}" alt="{$sc.name}" class="img_plugin"/>&nbsp;
+		            				{/if}
+		            			{*https://www.webasyst.ru/store/plugin/shop/wmimageincat/*}
+		            			{elseif $theme_settings.sub_cat_img_plugin == 'wmimageincat'}
+		            				{if shopWmimageincatPlugin::getCategoryImage($sc.id, 'icon')}
+		            					<img src="{shopWmimageincatPlugin::getCategoryImage($sc.id, 'icon')}" alt="{$sc.name}" class="img_plugin"/>&nbsp;
+		            				{/if}
+		            			{/if}
+		            		{/if}{* / item.params.icon*}
+		            		{if !empty($sc.params.h1)}
+		            			{$sc.params.h1}
+		            		{else}
+		            		    {$sc.name}
+		            		{/if}
+		            	</a>
+		            </li>
+		        {/foreach}
+		    </ul>
+		</div>
+	{/if}
+
+
+
+
+	{*СТРОЧНО-КНОПОЧНЫЕ ПОДКАТЕГОРИИ*}
+	{if $theme_settings.sub_cat_style == 'inline-buttons' && $category.subcategories}
+		<!-- inline subcategories -->
+		<div class="{*col-md-12 col-sm-12 col-xs-12 *} float-left">
+		    <ul class="sublist list-inline-buttons{if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)} sub-ajax{/if}">
+		    	{if !empty($theme_settings.sub_cats_title)}
+		    		<li class="uppercase" style="float: left; margin: 7px 10px 0px 0px;">
+		    			{$theme_settings.sub_cats_title}
+		    		</li>
+		    	{/if}
+
+		    	{if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)}
+		    		<li>
+	    				<a href="{$wa->currentUrl(0,1)}" class="button highlight light active">[`All`]</a>
+		    		</li>
+		    	{/if}
+
+		        {foreach $category.subcategories as $sc}
+		            <li>
+		            	<a href="{$sc.url}" class="button highlight light">
+		            		{if !empty($sc.params.icon)}
+		            			<i class="nav_icon {$sc.params.icon}"></i>&nbsp;
+		            		{else}
+		            			{*https://www.webasyst.ru/store/plugin/shop/categoryimage/*}
+		            			{if $theme_settings.sub_cat_img_plugin == 'categoryimage'}
+		            				{if !empty($sc.image)}
+		            					<img src="{$wa_static_url}wa-data/public/shop/categories/{$sc.id}/{$sc.id}.18x18{$sc.image}" data-at2x="{$wa_static_url}wa-data/public/shop/categories/{$sc.id}/{$sc.id}.36x36{$sc.image}" alt="{$sc.name}" class="img_plugin"/>&nbsp;
+		            				{/if}
+		            			{*https://www.webasyst.ru/store/plugin/shop/wmimageincat/*}
+		            			{elseif $theme_settings.sub_cat_img_plugin == 'wmimageincat'}
+		            				{if shopWmimageincatPlugin::getCategoryImage($sc.id, 'icon')}
+		            					<img src="{shopWmimageincatPlugin::getCategoryImage($sc.id, 'icon')}" alt="{$sc.name}" class="img_plugin"/>&nbsp;
+		            				{/if}
+		            			{/if}
+		            		{/if}{* / item.params.icon*}
+		            		{if !empty($sc.params.h1)}
+		            			{$sc.params.h1}
+		            		{else}
+		            		    {$sc.name}
+		            		{/if}
+		            	</a>
+		            </li>
+		        {/foreach}
+		    </ul>
+		</div>
+	{/if}
+
+
+
+
+	{*КНОПОЧНЫЕ КАТЕГОРИИ*}
+	{if $theme_settings.sub_cat_style == 'button' && $category.subcategories}
+		<!-- button subcategories -->
+		<div class="dropdown dropdown-left" data-speed="200">
+
+			<a href="#" class="button gray square dropdown-toggle" aria-haspopup="true" aria-expanded="true">
+				{if !empty($theme_settings.sub_cats_title)}
+					{$theme_settings.sub_cats_title}
+				{else}
+					<i class="fa fa-folder-open"></i> [`Categories`] <i class="fa fa-angle-down"></i>
+				{/if}
+			</a>
+
+			<ul class="dropdown-menu images{if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)} sub-ajax{/if}">
+				{if !empty($theme_settings.sub_cat_ajax) || !empty($category.params.sub_ajax)}
+					<li class="selected">
+						<a href="{$wa->currentUrl(0,1)}">[`All`]</a>
+					</li>
+				{/if}
+
+			{foreach $category.subcategories as $sc}
+				<li>
+					<a href="{$sc.url}" data-cat="cat_id{$sc.id}">
+						{if !empty($sc.params.icon)}
+							<i class="nav_icon {$sc.params.icon}"></i>&nbsp;
+						{else}
+							{*https://www.webasyst.ru/store/plugin/shop/categoryimage/*}
+							{if $theme_settings.sub_cat_img_plugin == 'categoryimage'}
+								{if !empty($sc.image)}
+									<img src="{$wa_static_url}wa-data/public/shop/categories/{$sc.id}/{$sc.id}.18x18{$sc.image}" data-at2x="{$wa_static_url}wa-data/public/shop/categories/{$sc.id}/{$sc.id}.36x36{$sc.image}" alt="{$sc.name}" class="img_plugin"/>&nbsp;
+								{/if}
+							{*https://www.webasyst.ru/store/plugin/shop/wmimageincat/*}
+							{elseif $theme_settings.sub_cat_img_plugin == 'wmimageincat'}
+								{if shopWmimageincatPlugin::getCategoryImage($sc.id, 'icon')}
+									<img src="{shopWmimageincatPlugin::getCategoryImage($sc.id, 'icon')}" alt="{$sc.name}" class="img_plugin"/>&nbsp;
+								{/if}
+							{/if}
+						{/if}{* / item.params.icon*}
+						{if !empty($sc.params.h1)}
+							{$sc.params.h1}
+						{else}
+						    {$sc.name}
+						{/if}
+					</a>
+				</li>
+			{/foreach}
+			</ul>
+
+		</div>{*/dropdown*}
+	{/if}
+
+{/if}
+{*/$place == 'category'*}
+
+	{*СТРОЧНАЯ СОРТИРОВКА*}
+	{if $theme_settings.sorting_style == 'inline' && !empty($sorting)}
+		<!-- inline sorting -->
+   		<div class="col-md-12 col-sm-12 col-xs-12 xs-align-center sorting_holder">
+		    <ul class="sorting list-inline{if !empty($theme_settings.cat_sort_ajax)} sub-ajax{/if}">
+		        {if !empty($theme_settings.sorting_title)}
+			        <li class="uppercase" style="margin: 7px 10px 0px 0px;">
+			        	{$theme_settings.sorting_title}
+			        </li>
+			    {/if}
+			    {if $place == 'category'}
+			        {if !empty($category) && !$category.sort_products}
+			            <li class="sort_link{if !$active_sort} selected{/if}">
+			            	<a href="{$wa->currentUrl(0, 1)}">
+			            		[`New & Popular`]
+			            	</a>
+			            </li>
+			        {/if}
+			    {/if}
+		        {foreach $sort_fields as $sort => $name}
+		            <li class="sort_link{if $active_sort == $sort} selected{/if}">
+		            	{$wa->shop->sortUrl($sort, $name, $active_sort)}
+		            </li>
+		            {if $wa->get('sort') == $sort}{$wa->title( $wa->title()|cat:' — '|cat:$name)}{/if}
+		        {/foreach}
+		    </ul>
+		</div>
+	{/if}
+
+	{*КНОПОЧНАЯ СОРТИРОВКА*}
+	{if $theme_settings.sorting_style == 'button' && !empty($sorting)}
+		{if $theme_settings.sub_cat_style !== 'button'}
+			<div class="clearfix"></div>
+		{/if}
+		<!-- button sorting -->
+		<div class="sorting_holder">
+			<div class="dropdown sorting-dropdown dropdown-left" data-speed="150">
+
+				<a href="#" class="button gray square dropdown-toggle" aria-haspopup="true" aria-expanded="true">
+					{if !empty($theme_settings.sorting_title)}
+						{$theme_settings.sorting_title}
+					{else}
+						<i class="sorting-icon"></i> [`Sort by`] <i class="fa fa-angle-down"></i>
+					{/if}
+				</a>
+
+				<ul class="sorting dropdown-menu{if !empty($theme_settings.cat_sort_ajax)} sub-ajax{/if}">
+					{if $place == 'category'}
+						{if !empty($category) && !$category.sort_products}
+						    <li class="sort_link{if !$active_sort} selected{/if}">
+						    	<a href="{$wa->currentUrl(0, 1)}">
+						    		[`New & Popular`]
+						    	</a>
+						    </li>
+						{/if}
+					{/if}
+					{foreach $sort_fields as $sort => $name}
+					    <li class="sort_link{if $active_sort == $sort} selected{/if}">
+					    	{$wa->shop->sortUrl($sort, $name, $active_sort)}
+					    </li>
+					    {if $wa->get('sort') == $sort}{$wa->title( $wa->title()|cat:' — '|cat:$name)}{/if}
+					{/foreach}
+				</ul>
+
+			</div>{*/dropdown*}
+		</div>{*/sorting_holder*}
+	{/if}
+
+
+	{* КНОПКА ФИЛЬТРОВ *}
+	{*
+	{if $place == 'category'}
+		<div class="clearfix visible-xs"></div>
+		<a href="#" class="button gray square">
+			<i class="fa fa-filter"></i> Фильтры <i class="fa fa-angle-down"></i>
+		</a>
+	{/if}
+	*}
+	{* / КНОПКА ФИЛЬТРОВ *}
+
+
+
+
+	{*ВЫВОДИТЬ ПО*}
+	{if !$wa->get('page') && empty($list) && !empty($products)}
+	<div class="dropdown dropdown-right" data-speed="150">
+
+		<a href="#" class="button gray square dropdown-toggle ppp{* tooltip*}" title="[`Products per page`]" aria-haspopup="true" aria-expanded="true" style="width: 52px;">
+			{if $theme_settings.pagination == 'lazyloading'}
+				{if !isset($smarty.cookies.lazyproducts)}
+					{if !isset($smarty.cookies.products_per_page)}
+						<span>30</span> <i class="fa fa-angle-down"></i>
+					{else}
+						<span>{$smarty.cookies.products_per_page}</span> <i class="fa fa-angle-down"></i>
+					{/if}
+				{else}
+					<span>[`All`]</span> <i class="fa fa-angle-down"></i>
+				{/if}
+
+			{elseif $theme_settings.pagination == 'paging'}
+				{if isset($smarty.cookies.lazyproducts)}
+					<span>[`All`]</span> <i class="fa fa-angle-down"></i>
+				{else}
+					{if !isset($smarty.cookies.products_per_page)}
+						<span>30</span> <i class="fa fa-angle-down"></i>
+					{else}
+						<span>{$smarty.cookies.products_per_page}</span> <i class="fa fa-angle-down"></i>
+					{/if}
+				{/if}
+			{/if}
+		</a>
+
+		<ul class="dropdown-menu narrow view_switchers switch_ppp">
+			<li{if isset($smarty.cookies.lazyproducts)} class="selected"{/if}>
+				<a href="{$wa->currentUrl(0,1)}" class="lazyproducts" data-perpage="{$theme_settings.ppp}">[`All`]</a>
+			</li>
+			<li{if isset($smarty.cookies.products_per_page) && $smarty.cookies.products_per_page == '12' && !isset($smarty.cookies.lazyproducts)} class="selected"{/if}>
+				<a href="" class="perpage" data-perpage="12">12</a>
+			</li>
+			<li{if isset($smarty.cookies.products_per_page) && $smarty.cookies.products_per_page == '24' && !isset($smarty.cookies.lazyproducts)} class="selected"{/if}>
+				<a href="" class="perpage" data-perpage="24">24</a>
+			</li>
+			<li{if isset($smarty.cookies.products_per_page) && $smarty.cookies.products_per_page == '36' && !isset($smarty.cookies.lazyproducts)} class="selected"{/if}>
+				<a href="" class="perpage" data-perpage="36">36</a>
+			</li>
+			<li{if isset($smarty.cookies.products_per_page) && $smarty.cookies.products_per_page == '48' && !isset($smarty.cookies.lazyproducts)} class="selected"{/if}>
+				<a href="" class="perpage" data-perpage="48">48</a>
+			</li>
+			<li{if isset($smarty.cookies.products_per_page) && $smarty.cookies.products_per_page == '60' && !isset($smarty.cookies.lazyproducts)} class="selected"{/if}>
+				<a href="" class="perpage" data-perpage="60">60</a>
+			</li>
+		</ul>
+
+	</div>{*/dropdown*}
+	{/if}{*/!$wa->get('page')*}
+
+
+
+	{* ПЕРЕКЛЮЧАТЕЛИ ВИДОВ кнопками *}
+    {if !empty($products)}
+	<div class="btn-group-right view_switchers">
+		{*thumbs_classic*}
+		
+		{$theme_settings.start_list_view='table'}
+		{if !empty($theme_settings.enable_lm_thumbs_classic)}
+			<a href="#" class="button gray square{if !isset($smarty.cookies.view_mode)}{if $theme_settings.start_list_view == 'thumbs_classic'} active{/if}{else}{if $smarty.cookies.view_mode == 'thumbs_classic'} active{/if}{/if}{* tooltip*}" title="[`Thumbs view`]" data-view="thumbs_classic">
+				<i class="fa fa-file-o{*fa-th*}"></i>
+			</a>
+		{/if}
+
+		{*thumbs_detailed*}
+		{if !empty($theme_settings.enable_lm_thumbs_detailed)}
+			<a href="#" class="button gray square{if !isset($smarty.cookies.view_mode)}{if $theme_settings.start_list_view == 'thumbs_detailed'} active{/if}{else}{if $smarty.cookies.view_mode == 'thumbs_detailed'} active{/if}{/if}{* tooltip*}" title="[`Thumbs view`] [`detailed`]" data-view="thumbs_detailed">
+				<i class="fa fa-file-text-o{*fa-th*}"></i>
+			</a>
+		{/if}
+
+		{*thumbs_min*}
+		{if !empty($theme_settings.enable_lm_thumbs_min)}
+			<a href="#" class="button gray square{if !isset($smarty.cookies.view_mode)}{if $theme_settings.start_list_view == 'thumbs_min'} active{/if}{else}{if $smarty.cookies.view_mode == 'thumbs_min'} active{/if}{/if}{* tooltip*}" title="[`Thumbs view`] [`only photos`]" data-view="thumbs_min">
+				<i class="fa fa-file-image-o{*fa-picture-o*}"></i>
+			</a>
+		{/if}
+
+		{*list*}
+		{if !empty($theme_settings.enable_lm_list)}
+            {*	Не имеет смысла показывать на узких экранах,
+                если всё равно хотите показать, удалите: hidden-xs из строки ниже*}
+			<a href="#" class="hidden-xs button gray square{if !isset($smarty.cookies.view_mode)}{if $theme_settings.start_list_view == 'list'} active{/if}{else}{if $smarty.cookies.view_mode == 'list'} active{/if}{/if}{* tooltip*}" title="[`List view`]" data-view="list">
+				<i class="fa fa-th-list"></i>
+			</a>
+		{/if}
+
+		{*table*}
+		{if !empty($theme_settings.enable_lm_table)}
+			{*	Не имеет смысла показывать на узких экранах,
+				если всё равно хотите показать, удалите: hidden-xs из строки ниже*}
+			<a href="#" class="hidden-xs button gray square{if !isset($smarty.cookies.view_mode)}{if $theme_settings.start_list_view == 'table'} active{/if}{else}{if $smarty.cookies.view_mode == 'table'} active{/if}{/if}{* tooltip*}" title="[`Small list view`]" data-view="table">
+				<i class="fa fa-list-ul"></i>
+			</a>
+		{/if}
+	</div>
+	{*btn-group-right*}
+    {/if}
+
+	{* ПЕРЕКЛЮЧАТЕЛЬ ВИДОВ списком (3 и более) *}
+	{*
+	<div class="dropdown dropdown-right" data-speed="150">
+
+		<a href="#" class="button gray square dropdown-toggle tooltip" title="[`Change view`]" aria-haspopup="true" aria-expanded="true" style="width: 41px;">
+			<i class="fa fa-th-large"></i> <i class="fa fa-angle-down"></i>
+		</a>
+
+		<ul class="dropdown-menu narrow view_switchers">
+			<li class="selected">
+				<a href="#">
+					<i class="fa fa-th-large"></i>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<i class="fa fa-th-list"></i>
+				</a>
+			</li>
+			<li>
+				<a href="#">
+					<i class="fa fa-align-justify"></i>
+				</a>
+			</li>
+		</ul>
+	</div>*}
+	{*/dropdown*}
+
+
+
+
+</div>{*/page-panel*}
+
+
+<script>
+	$(document).ready(function() {
+		function ajax_change(selector) {
+			var speed = 300;
+			$(selector).click(function() {
+
+				$(this).addClass('active').parent().addClass('selected')
+					.siblings('li').removeClass('selected')
+					.find('a').removeClass('active');
+
+                if ($(this).hasClass('sub-category-link')) {
+                    $('.show_all_subcats').show();
+                    $(this).parents('.owl-wrapper').find('li').removeClass('selected').find('a').removeClass('active');
+                    $(this).addClass('active').parent().addClass('selected');
+                }
+                if ($(this).hasClass('show_all_subcats')) {
+                    $(this).hide().removeClass('active');
+                    $('.sub-category-link').removeClass('active').parent().removeClass('selected');
+                }
+
+				var url = $(this).attr('href');
+				var link = $(this);
+
+				$.ajax({
+				  url: url,
+
+				  beforeSend: function(){
+				  	$('.product-container').find('.container').fadeOut(speed, function() { $(this).remove()});
+				  	$('#filters-holder').find('.filters').fadeOut(speed, function() { $(this).remove()});
+			  		$('.sorting_holder').empty();
+
+                    $('.bottom-description, .bullets, .setsborder-bottom').hide();
+
+
+			  		$('script[src="{$wa_active_theme_url}script.shop.min.js?v{$wa_theme_version}"]').remove();
+			  		$('script[src="{$wa_active_theme_url}shop.filters.min.js"]').remove();
+
+				  },
+				  success: function(data) {
+
+				  	$('.product-container').append($(data).find('.list-holder'));
+				    $('#filters-holder').append($(data).find('.filters'));
+				    $('.sorting_holder').append($(data).find('.sorting-dropdown, .sorting.list-inline'));
+                    $('.bottom-description, .bullets, .setsborder-bottom').show();
+
+				    $.getScript('{$wa_active_theme_url}script.shop.min.js?v{$wa_theme_version}');
+				    if ( $.isFunction($.fn.tooltipster) ) {
+				    	  $('.tooltip-btn').tooltipster({
+				    	  	theme: 'tooltipster-shadow',
+				    	  	position: 'top-right',
+				    	  	hideOnClick: true,
+				    	  });
+
+				    	  $('.tooltip').tooltipster({
+				    	  	theme: 'tooltipster-shadow',
+				    	  	hideOnClick: true,
+				    	  	touchDevices: false,
+				    	  });
+				    	  $('.tooltip-l').tooltipster({
+				    	  	theme: 'tooltipster-shadow',
+				    	  	position: 'left',
+				    	  	hideOnClick: true,
+				    	  	touchDevices: false,
+				    	  });
+
+                          $(document).trigger('products_reloaded');
+				    }
+
+				    history.pushState({ href:url}, null, url);
+			    	$.getScript('{$wa_active_theme_url}shop.filters.min.js');
+			    	ajax_change('.sorting a');
+			    	$.dropdownFn('.sorting-dropdown');
+
+                    {* для списка избранного *}
+                    {if $list == 'fav'}
+                        $.clickFav();
+                    {/if}
+
+				  },
+				});
+
+
+				return false;
+			});
+		}; ajax_change('.sub-ajax a');
+
+
+		$('.switch_ppp a').on('click', function() {
+			var ancore = $(this).text();
+			$('.button.ppp').removeClass('active').find('span').text(ancore);
+			$('.view_switchers.switch_ppp').hide();
+		});
+
+
+
+		function ajax_view(selector) {
+			var speed = 300;
+			$(selector).click(function() {
+
+				$(this).parent().addClass('selected')
+					.siblings('li').removeClass('selected')
+					.find('a').removeClass('active');
+				$(this).addClass('active').siblings('a').removeClass('active');
+
+				var url = $(location).attr('href');
+				var view = $(this).attr('data-view');
+
+				$.ajax({
+				  url: url,
+
+				  beforeSend: function(){
+				  	$('.product-container').find('.container').fadeOut(speed, function() { $(this).remove()});
+			  		$('#filters-holder').find('.filters').fadeOut(speed, function() { $(this).remove()});
+
+			  		$('script[src="{$wa_active_theme_url}script.shop.min.js?v{$wa_theme_version}"]').remove();
+			  		$('script[src="{$wa_active_theme_url}shop.filters.min.js"]').remove();
+
+                    $('.bottom-description, .bullets, .setsborder-bottom').hide();
+
+			  		if (view !== undefined) {
+			  			$.cookie('view_mode', view, { expires: 30, path: '/'});
+			  		}
+
+
+				  },
+				  success: function(data) {
+
+				  	$('.product-container').append($(data).find('.list-holder'));
+				  	$('#filters-holder').append($(data).find('.filters'));
+                    $('.bottom-description, .bullets, .setsborder-bottom').show();
+
+
+				    $.getScript('{$wa_active_theme_url}script.shop.min.js?v{$wa_theme_version}');
+				    if ( $.isFunction($.fn.tooltipster) ) {
+				    	  $('.tooltip-btn').tooltipster({
+				    	  	theme: 'tooltipster-shadow',
+				    	  	position: 'top-right',
+				    	  	hideOnClick: true,
+				    	  });
+
+				    	  $('.tooltip').tooltipster({
+				    	  	theme: 'tooltipster-shadow',
+				    	  	hideOnClick: true,
+				    	  	touchDevices: false,
+				    	  });
+				    	  $('.tooltip-l').tooltipster({
+				    	  	theme: 'tooltipster-shadow',
+				    	  	position: 'left',
+				    	  	hideOnClick: true,
+				    	  	touchDevices: false,
+				    	  });
+
+                          $(document).trigger('products_reloaded');
+				    }
+
+				    $.getScript('{$wa_active_theme_url}shop.filters.min.js');
+
+                    {* для списка избранного *}
+                    {if $list == 'fav'}
+                        $.clickFav();
+                    {/if}
+
+				  },
+				});
+
+
+				return false;
+			});
+		}; ajax_view('.view_switchers a');
+	});
+
+</script>
+
+{/strip}

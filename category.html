@@ -1,0 +1,336 @@
+{strip}
+{* СЛАЙДЕР С ГЛАВНОЙ *}
+{if !empty($category.params.rev_slider) && class_exists('shopRevolutionsliderPlugin')}
+	{shopRevolutionsliderPlugin::display($category.params.rev_slider)}
+{/if}
+{if !empty($theme_settings.demo)}
+	{if isset($smarty.cookies.home_slider_position)}
+		{$home_slider_position = $smarty.cookies.home_slider_position}
+	{else}
+		{$home_slider_position = $theme_settings.home_slider_position}
+	{/if}
+{else}
+	{$home_slider_position = $theme_settings.home_slider_position}
+{/if}
+
+{if !empty($theme_settings.home_slider_on_category) && $home_slider_position == 'content'}
+	{* СБОР ДАННЫХ *}
+	{$promocards = $wa->shop->promos()}
+	{if $wa->mylang}{$promocards = $wa->mylang->promos($promocards)}{/if}
+
+	{if !empty($theme_settings.top_slider_list_limit)}
+		{$slider_p_limit = $theme_settings.top_slider_list_limit}
+	{else}
+		{$slider_p_limit = ''}
+	{/if}
+	{$slider_products = $wa->shop->productSet( $theme_settings.top_slider_list_id , $slider_p_limit )}
+
+	{* САМ СЛАЙДЕР *}
+	{if !empty($theme_settings.home_page_slider_mode)}
+		{include file="home.slider.html" promocards=$promocards slider_products=$slider_products inline}
+	{/if}
+{/if}
+
+
+{* БАННЕР КАТЕГОРИИ *}
+{if !empty($category.params.cat_banner)}
+	{*Через доп. параметр cat_banner*}
+	<div style="text-align:center;">
+		<img src="{$category.params.cat_banner}" style="max-width:100%;" />
+	</div>
+{else}
+	{* Через плагин https://www.webasyst.ru/store/plugin/shop/wmimageincat/ *}
+	{if $wa->shop && class_exists('shopWmimageincatPlugin')}
+	    {if shopWmimageincatPlugin::getCategoryImage($category.id, 'banner')}
+	        <div style="text-align:center;">
+	    		<img src="{shopWmimageincatPlugin::getCategoryImage($category.id, 'banner')}" style="max-width:100%;" />
+    		</div>
+    	{/if}
+	{/if}
+{/if}
+{* / БАННЕР КАТЕГОРИИ *}
+
+{$masonry = $theme_settings.masonry}
+
+<div class="container">
+	<h1 class="page-name {$theme_settings.tb_align}">
+		{if !empty($category.params.icon)}
+			<i class="head_icon {$category.params.icon}"></i>&nbsp;
+		{else}
+			{*https://www.webasyst.ru/store/plugin/shop/categoryimage/*}
+			{if $theme_settings.head_cat_icon_plugin == 'categoryimage'}
+				{if !empty($category.image)}
+					<img src="{$wa_static_url}wa-data/public/shop/categories/{$category.id}/{$category.id}.18x18{$category.image}" data-at2x="{$wa_static_url}wa-data/public/shop/categories/{$category.id}/{$category.id}.36x36{$category.image}" alt="{$category.name}" class="img_plugin">&nbsp;
+				{/if}
+			{*https://www.webasyst.ru/store/plugin/shop/wmimageincat/*}
+			{elseif $theme_settings.head_cat_icon_plugin == 'wmimageincat'}
+				{if shopWmimageincatPlugin::getCategoryImage($category.id, 'icon')}
+					<img src="{shopWmimageincatPlugin::getCategoryImage($category.id, 'icon')}" alt="{$category.name}" class="img_plugin">&nbsp;
+				{/if}
+			{/if}
+		{/if}{* / item.params.icon*}
+
+		{if !empty($category.params.h1)}
+			{$category.params.h1}
+		{else}
+		    {$category.name}
+	    {/if}
+
+	    {if $wa->user()->isAdmin()}
+	    	&nbsp;
+	    	<a href="{$wa_backend_url}shop/?action=products#/products/category_id={$category.id}/" target="_blank" class="tooltip" title="[`Open category in backend`]">
+	    		  <i class="fa fa-edit" style="font-size: 16px;"></i>
+	    	</a>
+	    {/if}
+	</h1>
+
+
+	{include file="breadcrumbs.html" place='category' inline}
+
+</div>{*/container*}
+
+
+
+<div class="container">
+
+	<!-- plugin hook: 'frontend_category' -->
+	{* @event frontend_category.%plugin_id% *}
+	{foreach $frontend_category as $_}{$_}{/foreach}
+
+
+
+
+	{$show_more = '[`Read more`]'}
+	{$hide_more = '[`Hide`]'}
+
+
+	<!-- description -->
+	{if $theme_settings.cat_desc_position == 'top' && !$wa->get('page')}
+		{if !empty($theme_settings.home_tabs_on_category)}
+
+			{include file='category.tabs.html' inline}
+
+		{else}
+			{if $category.description}
+				<div class="category-description top-description">
+			    	{$category.description|replace:'<p>[hide]</p>':'[hide]'|replace:'<p>[/hide]</p>':'[/hide]'|replace:'[hide]':'<div class="spoiler_description" style="display:none;">'|replace:'[/hide]':'</div><a href="#" class="button highlight spoiler_toggle" data-hide-text="[hide_more]">[show_more]</a>'|replace:'[show_more]':$show_more|replace:'[hide_more]':$hide_more}
+			    </div>
+			    <div class="setsborder-top"></div>
+			{/if}
+		{/if}{* / home_tabs_on_category*}
+	{/if}{* / $theme_settings.cat_desc_position == 'top'*}
+
+
+
+
+
+
+	{*	БУЛЛЕТЫ	*}
+	{if $theme_settings.cat_bullets_show == 'top'}
+		{if empty($category.description)}
+			<div class="margin-top15 blank"></div>
+		{/if}
+		{include file="bullets.html" items=$theme_settings.cat_bullets_items inline}
+		<div class="margin-top5 blank"></div>
+		<div class="setsborder-bottom"></div>
+		<div class="margin-bottom10 blank"></div>
+	{/if}
+	{*	КОНЕЦ: БУЛЛЕТЫ	*}
+
+	{*ПАНЕЛЬ: подкатегории, переключатели, кнопки*}
+	{if !$wa->get('page')}
+		{include file='category.panel.html' place='category' sorting=!empty($category.params.enable_sorting) inline}
+	{/if}
+
+</div>
+
+{if !empty($theme_settings.cat_error_hide_well)}
+	{$hide_error = '1'}
+{else}
+	{$hide_error = ''}
+{/if}
+{* Чтобы спрятать сообщение об ошибке вне настроек темы уберите звёздочки из строки ниже *}
+{*$hide_error = '1'*}
+
+<div class="product-container">
+<div class="container list-holder">
+
+	<div id="product-list">
+		{if !$products}
+			{if empty($hide_error)}
+				<div class="well align-center">
+					<div class="h2">
+					    {if !empty($filters)}
+					        [`No products were found.`]
+					    {else}
+					        [`This category does not contain any products.`]
+					    {/if}
+				    </div>
+				    {if !empty($theme_settings.cat_error_buttons)}
+				    	<div style="padding-top: 25px;">
+				    		[`You can`] <a href="{$wa->getUrl('shop/frontend')}" class="button"><i class="fa fa-shopping-cart"></i> [`go to shop`]</a> [`or use`] <a href="#" class="button gray search_link"><i class="fa fa-search"></i> [`Search`]</a>
+				    	</div>
+				    {/if}
+				    {if !empty($theme_settings.cat_error_show_set)}
+						{if !empty($theme_settings.error_set_title)}
+							<div class="h2" style="padding-top: 25px;">
+								{$theme_settings.error_set_title}
+							</div>
+						{/if}
+					{/if}
+				</div>
+			{/if}
+
+			{if !empty($theme_settings.cat_error_show_set)}
+
+				{$error_set_id = $theme_settings.error_set_id}
+				{$error_set_limit = $theme_settings.error_set_limit}
+				{$error_slider=''}
+				{if !empty($theme_settings.cat_error_set_slider)}
+					{$error_slider='error'}
+				{/if}
+				{if !empty($error_set_id)}
+					{$error_products = $wa->shop->productSet( $error_set_id , $error_set_limit )}
+
+					{if !isset($smarty.cookies.view_mode)}
+
+						{if $theme_settings.start_list_view == 'thumbs_classic'}
+							{include file='list-thumbs.html' btn_list='category' products=$error_products slider=$error_slider}
+						{elseif $theme_settings.start_list_view == 'thumbs_detailed'}
+							{include file='list-detailed.html' btn_list='category' products=$error_products masonry=$masonry slider=$error_slider}
+						{elseif $theme_settings.start_list_view == 'thumbs_min'}
+							{include file='list-thumbs.min.html' btn_list='category' products=$error_products slider=$error_slider}
+						{elseif $theme_settings.start_list_view == 'list'}
+							{include file='list-list.html' btn_list='category' products=$error_products slider=$error_slider}
+						{elseif $theme_settings.start_list_view == 'table'}
+							{include file='list-table.html' btn_list='category' products=$error_products slider=$error_slider}
+						{/if}
+
+					{else}
+
+						{if $smarty.cookies.view_mode == 'thumbs_classic'}
+							{include file='list-thumbs.html' btn_list='category' products=$error_products slider=$error_slider}
+						{elseif $smarty.cookies.view_mode == 'thumbs_detailed'}
+							{include file='list-detailed.html' btn_list='category' products=$error_products masonry=$masonry slider=$error_slider}
+						{elseif $smarty.cookies.view_mode == 'thumbs_min'}
+							{include file='list-thumbs.min.html' btn_list='category' products=$error_products slider=$error_slider}
+						{elseif $smarty.cookies.view_mode == 'list'}
+							{include file='list-list.html' btn_list='category' products=$error_products slider=$error_slider}
+						{elseif $smarty.cookies.view_mode == 'table'}
+							{include file='list-table.html' btn_list='category' products=$error_products slider=$error_slider}
+						{/if}
+
+					{/if}{*/$smarty.cookies.view_mode*}
+				{/if}
+			{/if}
+
+		{else}
+
+			{if !isset($smarty.cookies.view_mode)}
+
+				{if !empty($category.params.start_list_view)}
+					{$start_list_view = $category.params.start_list_view}
+				{else}
+					{$start_list_view = 'table'}
+				{/if}
+
+				{if $start_list_view == 'thumbs_classic'}
+				    {include file='list-thumbs.html' btn_list='category'}
+				{elseif $start_list_view == 'thumbs_detailed'}
+					{include file='list-detailed.html' btn_list='category' masonry=$masonry}
+				{elseif $start_list_view == 'thumbs_min'}
+					{include file='list-thumbs.min.html' btn_list='category'}
+				{elseif $start_list_view == 'list'}
+					{include file='list-list.html' btn_list='category'}
+				{elseif $start_list_view == 'table'}
+					{include file='list-table.html' btn_list='category'}
+				{/if}
+
+			{else}
+
+				{if $smarty.cookies.view_mode == 'thumbs_classic'}
+				    {include file='list-thumbs.html' btn_list='category'}
+				{elseif $smarty.cookies.view_mode == 'thumbs_detailed'}
+					{include file='list-detailed.html' btn_list='category' masonry=$masonry}
+				{elseif $smarty.cookies.view_mode == 'thumbs_min'}
+					{include file='list-thumbs.min.html' btn_list='category'}
+				{elseif $smarty.cookies.view_mode == 'list'}
+					{include file='list-list.html' btn_list='category'}
+				{elseif $smarty.cookies.view_mode == 'table'}
+					{include file='list-table.html' btn_list='category'}
+				{/if}
+
+			{/if}{*/$smarty.cookies.view_mode*}
+
+		{/if}
+	</div><!--id="product-list"-->
+
+	<div class="clearfix"></div>
+</div>{*/container*}
+</div>{*/product-container*}
+
+
+
+
+<div class="container">
+	<!-- description -->
+	{if $theme_settings.cat_desc_position == 'bottom' && !$wa->get('page')}
+		{if !empty($theme_settings.home_tabs_on_category)}
+
+			{include file='category.tabs.html' inline}
+
+		{else}
+			{if $category.description}
+				<div class="margin-top5 blank"></div>
+				<div class="setsborder-top"></div>
+				<div class="margin-bottom5 blank"></div>
+				<div class="category-description bottom-description">
+					{$category.description|replace:'<p>[hide]</p>':'[hide]'|replace:'<p>[/hide]</p>':'[/hide]'|replace:'[hide]':'<div class="spoiler_description" style="display:none;">'|replace:'[/hide]':'</div><a href="#" class="button highlight spoiler_toggle" data-hide-text="[hide_more]">[show_more]</a>'|replace:'[show_more]':$show_more|replace:'[hide_more]':$hide_more}
+				</div>
+			{/if}
+		{/if}{* / home_tabs_on_category*}
+	{/if}{* / $theme_settings.cat_desc_position == 'top'*}
+
+
+
+	{*doptext*}
+	{if !empty($category.params.doptext) && !$wa->get('page')}
+		{if $theme_settings.cat_desc_position !== 'bottom'}
+			<div class="margin-top10 blank"></div>
+			<div class="setsborder-bottom"></div>
+			<div class="margin-bottom10 blank"></div>
+		{/if}
+		<div class="category-description bottom-description">
+			{$category.params.doptext|replace:'<p>[hide]</p>':'[hide]'|replace:'<p>[/hide]</p>':'[/hide]'|replace:'[hide]':'<div class="spoiler_description" style="display:none;">'|replace:'[/hide]':'</div><a href="#" class="button highlight spoiler_toggle" data-hide-text="[hide_more]">[show_more]</a>'|replace:'[show_more]':$show_more|replace:'[hide_more]':$hide_more}
+		</div>
+		<div class="margin-top10 blank"></div>
+		<div class="setsborder-bottom"></div>
+		<div class="margin-bottom10 blank"></div>
+	{/if}
+
+	{*	БУЛЛЕТЫ	*}
+	{if $theme_settings.cat_bullets_show == 'bottom'}
+		{if $wa->get('page') || ( empty($category.params.doptext) && $theme_settings.cat_desc_position !== 'bottom' ) }
+		<div class="margin-top10 blank"></div>
+		<div class="setsborder-bottom"></div>
+		<div class="margin-bottom10 blank"></div>
+		{/if}
+		{include file="bullets.html" items=$theme_settings.cat_bullets_items inline}
+		<div class="margin-bottom10 blank"></div>
+	{/if}
+	{*	КОНЕЦ: БУЛЛЕТЫ	*}
+
+</div>{*/container*}
+
+{if !waRequest::isXMLHttpRequest()}{* Не отдаём по ajax *}
+	<div class="container" style="padding-top: 20px; padding-bottom: 20px;">
+		{include file="`$wa_parent_theme_path`/social.html" inline}
+	</div>
+{/if}
+
+{if waRequest::isXMLHttpRequest() && !empty($filters)}{* Фильтры по Ajax *}
+	<div id="temp-filters">
+		{include file="category.fliters.ajax.html" speed='300' closed_i='fa-angle-right' opened_i='fa-angle-down' inline}
+	</div>
+{/if}
+{/strip}

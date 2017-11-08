@@ -1,0 +1,357 @@
+{strip}
+
+{*	ИНСТРУКЦИИ:
+	Если вы используете встраивание списков на страницы магазина,
+	необходимо вручную настроить отображение карточек товара:
+
+	1. Введите названия подписей для кнопок между пустых кавычек ниже
+	2. Укажите класс для включения / выключения анимации карточки товара при наведении
+	3. Если хотите включить автобейджи, найдите в этом файле фрагмент кода:
+		 && !empty($theme_settings.c_autobadges)
+	   и удалите его (закрывающую фигурную скобку оставьте)
+
+	4. Откройте файлы:
+		– list-products.buttons.html
+		– list-products.fav-buttons.html
+	   И следуйте инструкциям в них.
+*}
+
+
+{*ПОДПИСИ ДЛЯ КНОПОК*}
+{if $wa->shop->cart->total() > 0}
+	{if !empty($theme_settings.btn_cart_not_empty)}
+		{$add2cart_label = $theme_settings.btn_cart_not_empty}
+	{else}
+		{$add2cart_label = ''}{*В корзину / Add to cart*}
+	{/if}
+{else}
+	{if !empty($theme_settings.btn_cart_empty)}
+		{$add2cart_label = $theme_settings.btn_cart_empty}
+	{else}
+		{$add2cart_label = ''}{*Купить / Buy*}
+	{/if}
+{/if}
+
+{if !empty($theme_settings.btn_cart_order)}
+	{$preorder_label = $theme_settings.btn_cart_order}
+{else}
+	{$preorder_label = ''}{*Заказать / Order*}
+{/if}
+
+{if !empty($theme_settings.stock_out_label)}
+	{$stock_out_label = $theme_settings.stock_out_label}
+{else}
+	{$stock_out_label = '[`Out of stock`]'}
+{/if}
+
+{if !empty($theme_settings.stock_preorder_label)}
+	{$stock_preorder_label = $theme_settings.stock_preorder_label}
+{else}
+	{$stock_preorder_label = '[`Pre-order only`]'}
+{/if}
+
+
+{*КЛАССЫ ДЛЯ АНИМАЦИИ*}
+{if !empty($theme_settings.hover_animation)}
+	{$hover_animation = $theme_settings.hover_animation}
+{else}
+	{*	Если файл встроен через редактор страниц*}
+	{*	Доступные значения:
+		– Пусто = нет анимации
+		– bounceIn_custom = стандартная анимация
+		– zoomIn = быстрое увеличение
+		– fadeIn = плавное появление
+	*}
+	{$hover_animation = ''}
+{/if}
+
+
+{$theme_id = waRequest::getTheme()}
+{$fav = waRequest::cookie('shop_fav', array(), waRequest::TYPE_ARRAY_INT)}{*Проверяем на избранное*}
+{$features = $wa->shop->features($products)}
+
+{$size = '0x320'}
+{$gallery = $wa->shop->images(array_keys($products), '750')}
+{if !empty($theme_settings.show_second_photo)}
+	{$gallery48 = $wa->shop->images(array_keys($products), '48x48')}
+{/if}
+
+<script type="text/javascript">
+$.getScript( "{$wa_active_theme_url}theme_plugins/jquery.input-stepper.min.js?v{$wa_theme_version}" )
+    .done(function( script ) {
+    	$('.item-qty').inputStepper({
+			dataAttributeIncrease: 'increase',
+			dataAttributeDecrease: 'decrease'
+		});
+		$(document).on('products_reloaded', function(){
+			$('.item-qty').inputStepper({
+				dataAttributeIncrease: 'increase',
+				dataAttributeDecrease: 'decrease'
+			});
+		});
+
+    });
+</script>
+
+<ul class="product-list thumbs table_view">
+{$view_class = 'view_class'}
+
+{foreach $products as $p}
+
+	{*Поддержка доп.параметров товаров*}
+	{$param_item = $wa->shop->product($p.id)}
+
+    {$available = $wa->shop->settings('ignore_stock_count') || $p.count === null || $p.count > 0}
+    <li itemscope itemtype ="http://schema.org/Product" class="flexdiscount-product-wrap {$view_class}" data-cat='cat_id{$p.category_id}'>
+
+
+
+    {*BADGE HTML*}
+    {$badge_html = $wa->shop->badgeHtml($p.badge)}
+
+    {*АВТОБЕЙДЖИ*}
+    {if !$p.badge && !empty($theme_settings.c_autobadges)}
+    	{*ПО ЦЕНЕ*}
+    	{if $p.compare_price && $p.compare_price > 0 && ($p.compare_price > $p.price)}
+    		{if empty($theme_settings.auto_discount)}
+    			{$p.badge = 'lowprice'}
+    			{$auto_discount = ''}
+    		{else}
+    			{$auto_discount = 'true'}
+    		{/if}
+    	{/if}
+
+    	{*ПО ВРЕМЕНИ*}
+    	{$new_days = $theme_settings.c_auto_new_days}
+    	{if (((time() - strtotime($p.create_datetime)) / (60*60*24)) < $new_days) && empty($auto_discount) && $p.badge !=='lowprice'}
+    		{$p.badge = 'new'}
+    	{/if}
+    {/if}
+    {* / АВТОБЕЙДЖИ*}
+
+
+
+	<div class="product{if !empty($hover_animation)} animated_shadow{/if}{if $p.badge && $p.badge == 'lowprice' || (empty($badge_html) && $p.compare_price && !empty($theme_settings.auto_discount) && !empty($theme_settings.c_autobadges))} lowprice{/if}{if $p.badge && $p.badge == 'new'} new{/if}{if $p.badge && $p.badge == 'bestseller'} bestseller{/if}{if !$available} out{/if}" style="margin: 0 10px;">
+
+		<div class="row">
+
+			{$badge_html = $wa->shop->badgeHtml($p.badge)}
+			{if $badge_html}
+			    <div class="corner top left{if !empty($theme_settings.auBadge_tr)} badge-transparent{/if}" style="width: 200px;">{$badge_html}</div>
+			{else}
+				{*Процентная скидка*}
+				{if $p.compare_price && $p.compare_price > 0 && !empty($theme_settings.auto_discount) && !empty($theme_settings.c_autobadges)}
+					{$discount_value = 100 - (100/($p.compare_price/$p.price))}
+
+					<div class="corner top left{if !empty($theme_settings.auBadge_tr)} badge-transparent{/if}" style="width: 200px;">
+						<div class="badge low-price">
+							<span>
+								{if !empty($theme_settings.auto_discount_text)}
+									{$theme_settings.auto_discount_text}&nbsp;
+								{/if}
+								-{$discount_value|round}%
+							</span>
+						</div>
+					</div>
+				{/if}
+			{/if}
+			{* / BADGE HTML*}
+
+
+
+			<div class="col-md-2 col-sm-2 col-xs-2 padding10">
+					<a href="{$p.frontend_url}">
+						{if $wa->shop->config('enable_2x')}
+					    {$wa->shop->productImgHtml($p, $size, ['itemprop' => 'image', 'class' => 'first-img', 'onload' => 'if ( $.isFunction($.fn.retina) ) { $(this).retina({ force_original_dimensions: true }); }', 'alt' => $p.name, 'default' => "`$wa_theme_url`img/dummy48.png", 'style' => 'max-width: 100%;'])}
+						{else}
+							{$wa->shop->productImgHtml($p, $size, ['itemprop' => 'image', 'alt' => $p.name, 'default' => "`$wa_theme_url`img/dummy48.png", 'style' => 'max-width: 100%;'])}
+						{/if}
+
+						{*Получение второго изображения*}
+						{if !empty($gallery48[$p.id]) && !empty($theme_settings.show_second_photo)}
+							<div class="hidden">
+								{foreach $gallery48[$p.id] as $_img}
+									{if $_img@iteration == 2}
+										<img src="{$_img['url_48x48']}" itemprop="image" onload="if ( $.isFunction($.fn.retina) ) { $(this).retina({ force_original_dimensions: true }); }" class='sec-img' alt="" />
+									{/if}
+								{/foreach}
+							</div>
+						{/if}
+					</a>
+			</div>{* / image*}
+
+
+
+			<div class="col-md-4 col-sm-10 col-xs-10 product_content">
+				<a href="{$p.frontend_url}" class="product_title">
+			        <span itemprop="name" class="name">
+			        	{strip_tags($p.name)}
+			        </span>
+			        {if $p.rating > 0}
+			            <span class="rating nowrap inline-block">
+			                {$wa->shop->ratingHtml($p.rating, 10)}
+			            </span>{* / rating*}
+			        {/if}
+				</a>{*/ fronted_url*}
+				<meta itemprop="description" content="[`See more about`] {$p.name} [`in our store`]">
+
+				{* Кнопки галереи, просмотра, ссылки и редактора *}
+				{if !empty($btn_list)}
+					{$btn_list = $btn_list}
+				{else}
+					{$btn_list = 'user_list'}
+				{/if}
+				{* 	Данная конструкция используется для корректного подключения файлов в том случае,
+					если данный файл вставляется на страницы через встроенный редактор
+				*}
+				<div class="buttons_holder">
+					{include file="`$wa->shop->themePath($theme_id)`list-products.buttons.html" btn_list=$btn_list inline}
+				</div>
+
+
+
+
+			</div>{*/product_content*}
+
+
+
+			<div class="col-md-2 col-md-offset-0 col-sm-offset-2 col-sm-10 col-xs-offset-2 col-xs-10 stocks">
+
+				{if $available}
+					{if $p.count == '0'}
+						{if !empty($theme_settings.c_preorder)}
+							<span class="yellow"><i class="fa fa-check"></i> {$theme_settings.c_preorder}</span>
+						{else}
+							<span class="yellow"><i class="fa fa-check"></i> {$stock_preorder_label}</span>
+						{/if}
+					{else}
+						<span class="green"><i class="fa fa-check"></i> [`In stock`]</span>
+					{/if}
+				{else}
+					{if !empty($theme_settings.c_out_of_stock)}
+						<span class="red"><i class="fa fa-times"></i> {$theme_settings.c_out_of_stock}</span>
+					{else}
+						<span class="red"><i class="fa fa-times"></i> {$stock_out_label}</span>
+					{/if}
+				{/if}
+
+			</div>{*/stocks*}
+
+
+
+
+			<div class="{if !empty($theme_settings.show_qty)}col-md-1{else}col-md-2{/if} col-md-offset-0 col-sm-offset-2 col-sm-4 col-xs-12 align-right sm-align-left xs-align-center">
+				<div class="pricing{if empty($theme_settings.show_qty)} noqty{/if}">
+				    {if !empty($param_item.params.price)}
+				    	{*Цена через доп. параметр*}
+				    	<span class="price nowrap">{$param_item.params.price}</span>
+				    {else}
+				    	{if $p.min_price !== $p.max_price && !empty($theme_settings.min_max_price)}
+				    		<span class="price minmax"><span class="nowrap">[`from`] {shop_currency_html($p.min_price)}</span> <span class="nowrap">[`to`] {shop_currency_html($p.max_price)}</span></span>
+				    	{else}
+				    		{if $p.compare_price > 0}
+				    			<span class="compare-at-price nowrap"> {shop_currency_html($p.compare_price)}</span>
+				    		{/if}
+				    		<span class="price nowrap">{if $p.compare_price > 0}&nbsp;{/if}{shop_currency_html($p.price)}{if !empty($param_item.params.price_item)}{$param_item.params.price_item}{/if}</span>
+				    	{/if}
+				    {/if}
+				</div>{*/pricing*}
+			</div>
+
+			<div itemprop="offers" class="{if !empty($theme_settings.show_qty)}col-md-3{else}col-md-3{/if} col-sm-6 col-xs-12" itemscope itemtype="http://schema.org/Offer">
+			    {if $available}
+			        <form class="purchase addtocart flexdiscount-product-form{if !empty($theme_settings.enable_flying_to_cart)} flying{/if}{if !empty($theme_settings.enable_jumping_cart)} jumping{/if}{if !empty($theme_settings.enable_flash_cart)} flash{/if}" {if $p.sku_count > 1}data-url="{$p.frontend_url}{if strpos($p.frontend_url, '?')}&{else}?{/if}cart=1"{/if} method="post" action="{$wa->getUrl('/frontendCart/add')}">
+
+
+			        	{* КОЛ-ВО *}
+				        	{if !empty($theme_settings.show_qty)}
+
+								{if !empty($param_item.params.qty_min)}
+									{$qty_min = $param_item.params.qty_min}
+								{else}
+									{* замените 1 в этой переменной на переменную минимума из соответствующего плагина *}
+									{$qty_min = 1}
+								{/if}
+
+								{if !empty($param_item.params.qty_step)}
+									{$qty_step = $param_item.params.qty_step}
+								{else}
+									{* замените 1 в этой переменной на переменную кратности из соответствующего плагина *}
+									{$qty_step = 1}
+								{/if}
+
+					        	<div class="item-qty col-md-6 col-sm-6 col-xs-12 align-center sm-align-right xs-align-center">
+					        	    <span class="qty">
+					        	        <a href="#" data-input-stepper-decrease data-decrease="{$qty_step}"><i class="fa fa-minus"></i></a>
+					        	        <input type="number" name="quantity" class="align-center" value="1" min="{$qty_min}" {if !$wa->shop->settings('ignore_stock_count') && $p.count}max="{$p.count}"{/if} style="width: 30px;">
+					        	        <a href="#" data-input-stepper-increase data-increase="{$qty_step}"><i class="fa fa-plus"></i></a>
+					        	    </span>
+					        	</div>{* item-qty *}
+				       	{/if}
+			            {* / КОЛ-ВО *}
+
+
+
+
+			            <div class="{if !empty($theme_settings.show_qty)}col-md-6 col-sm-6{else}col-md-12 col-sm-12{/if} col-xs-12 align-right xs-align-center inline-block">
+			            	<button type="submit" class="button button100 nowrap">
+			            		<i class="extra-icon-cart4"></i>
+			            		{if $available && $p.count == '0'}
+			            			{$preorder_label}
+			            		{else}
+			            		    {$add2cart_label}
+			            		{/if}
+			            	</button>
+
+			                <i class="adding2cart"></i>
+						</div>
+
+
+			            <meta itemprop="price" content="{$p.price|replace:',':'.'}">
+			            <meta itemprop="priceCurrency" content="{$wa->shop->primaryCurrency()}">
+
+			            <input type="hidden" name="product_id" value="{$p.id}">
+
+			        </form>
+			        <link itemprop="availability" href="http://schema.org/InStock" />
+			    {else}
+
+			        <meta itemprop="price" content="{$p.price|replace:',':'.'}">
+			        <meta itemprop="priceCurrency" content="{$wa->shop->primaryCurrency()}">
+			    	<link itemprop="availability" href="http://schema.org/OutOfStock" />
+
+			    {/if}
+			</div>{*/offers*}
+
+
+
+
+			{* 	Данная конструкция используется для корректного подключения файлов в том случае,
+				если данный файл вставляется на страницы через встроенный редактор
+			*}
+			{include file="`$wa->shop->themePath($theme_id)`list-products.fav-buttons.html" inline}
+
+
+		</div>{*/ .row*}
+
+	</div>{* / product *}
+    </li>
+{/foreach}
+</ul>
+
+{if !empty($theme_settings.ppp_data_times)}
+	{$ppp_data_times = $theme_settings.ppp_data_times}
+{else}
+	{$ppp_data_times = '2'}
+{/if}
+
+{if isset($pages_count) && $pages_count > 1}
+<div class="block align-center {if isset($smarty.cookies.lazyproducts)}lazyloading-paging{else}paging-nav{/if}"  data-times="{$ppp_data_times}" data-link-text="[`More`]" data-loading-str="[`Loading...`]">
+    {wa_pagination total=$pages_count attrs=['class' => "menu-h pagination"]}
+</div>
+{/if}
+
+
+
+
+{/strip}

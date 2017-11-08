@@ -69,6 +69,16 @@
 }
 
 
+/*products category view table*/
+.product-list.thumbs.table_view img{
+	height:110px;
+	margin-top:-30px;
+}
+
+.product-list.thumbs.table_view span.name{
+	font-weight:bold;
+}
+
 @media all and (max-width: 800px)
 {
 		.header_inner .header_offset .brand{
@@ -84,7 +94,13 @@
 {
 	.header_inner .header_offset>div{
 		height:130px;
-		padding:2% 0%!important;
+		/*padding:2% 0%!important;*/
+		position:relative;
+		top:30px;
+	}
+	
+	.header_inner .sidebar_offset h1{
+		margin-top:30px;
 	}
 	
 	.footer_holder .row{
